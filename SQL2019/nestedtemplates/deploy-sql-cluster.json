@@ -7,7 +7,7 @@
             "metadata": {
                 "description": "Location for the VM, only certain regions support zones during preview."
             }
-        },  
+        },
         "namePrefix": {
             "type": "string",
             "minLength": 3,
@@ -39,6 +39,12 @@
             "type": "string",
             "metadata": {
                 "description": "OU Path for server object to be created in domain"
+            }
+        },
+        "agListenerIpAddress": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter the IP address of your AG Listener"
             }
         },
         "sqlServiceAccount": {
@@ -177,7 +183,7 @@
         "agEpName": "[concat(variables('vmNamePrefix'),'ha')]",
         "agListenerPort": 1433,
         "agProbePort": 59999,
-        "zones": ["1","2","3"]
+        "zones": [ "1", "2", "3" ]
     },
     "resources": [
         {
@@ -207,7 +213,7 @@
                             "privateIPAllocationMethod": "Dynamic",
                             "subnet": {
                                 "id": "[concat(parameters('nicVnetUri'),'/subnets/',parameters('existingSubnetName'))]"
-                            },           
+                            },
                             "primary": true
                         }
                     },
@@ -419,7 +425,7 @@
                         "sqlAlwaysOnEndpointName": "[variables('agEpName')]",
                         "vmCount": "[parameters('vmCount')]",
                         "clusterIpAddresses": "[reference(concat(variables('vmNamePrefix'),sub(parameters('vmCount'),1),'-clusterIp')).outputs.result.value]",
-                        "agListenerIpAddress": "[reference(variables('lbName')).frontendIPConfigurations[0].properties.privateIPAddress]",
+                        "agListenerIpAddress": "[parameters('agListenerIpAddress')]",
                         "numberOfDisks": "[parameters('vmDiskCount')]",
                         "workloadType": "[parameters('workloadType')]",
                         "databaseEnginePort": "[variables('agListenerPort')]",
