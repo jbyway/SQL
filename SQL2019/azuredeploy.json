@@ -198,6 +198,9 @@
           "ouPath": {
             "value": "[parameters('ouPath')]"
           },
+          "agListenerIpAddress": {
+            "value": "[parameters('agListenerIpAddress')]"
+          },
           "adminUsername": {
             "value": "[parameters('adminUsername')]"
           },
