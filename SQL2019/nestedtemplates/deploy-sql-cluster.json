@@ -145,11 +145,11 @@
         },
         "imagePublisher": {
             "type": "string",
-            "defaultValue": "MicrosoftSQLServer"
+            "defaultValue": "MicrosoftWindowsServer"
         },
         "imageOffer": {
             "type": "string",
-            "defaultValue": "SQL2016SP1-WS2016"
+            "defaultValue": "2016-Datacenter"
         },
         "imageSKU": {
             "type": "string",
