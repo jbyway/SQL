@@ -82,6 +82,13 @@
         "description": "Enter the OU path for the server objects"
       }
     },
+    "agListenerIpAddress": {
+      "type": "string",
+      "metadata": {
+        "description": "Enter the IP address of your AG Listener"
+      },
+      "defaultValue": "10.0.11.50"
+    },
     "adminUsername": {
       "type": "string",
       "metadata": {
