@@ -24,6 +24,18 @@
       },
       "defaultValue": "Standard_DS3_v2"
     },
+    "VMImageResourceID": {
+      "type": "string",
+      "metadata": {
+        "description": "Enter ResourceID of Reference Image"
+      }
+    },
+    "SQLISOLocation": {
+      "type": "string",
+      "metadata": {
+        "description": "Enter the UNC Path where you can copy the SQL ISO from. Include full name and path"
+      }
+    },
     "sqlVMImage": {
       "type": "string",
       "allowedValues": [
@@ -75,6 +87,12 @@
       "type": "string",
       "metadata": {
         "description": "DNS domain name for existing Active Directory domain"
+      }
+    },
+    "ouPath": {
+      "type": "string",
+      "metadata": {
+        "description": "Enter the OU path for the server objects"
       }
     },
     "adminUsername": {
@@ -133,6 +151,13 @@
         "description": "Enable outbound Internet access via source NAT to support ongoing VM Agent extension communication needs"
       }
     },
+    "enableAcceleratedNetworking": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Enables Accelerated Networking feature, notice that VM size must support it, this is supported in most of general purpose and compute-optimized instances with 2 or more vCPUs, on instances that supports hyperthreading it is required minimum of 4 vCPUs."
+      }
+    },
     "workloadType": {
       "type": "string",
       "allowedValues": [
@@ -187,6 +212,9 @@
           "domainName": {
             "value": "[parameters('existingDomainName')]"
           },
+          "ouPath": {
+            "value": "[parameters('ouPath')]"
+          },
           "adminUsername": {
             "value": "[parameters('adminUsername')]"
           },
@@ -210,6 +238,12 @@
           },
           "vmSize": {
             "value": "[parameters('vmSize')]"
+          },
+          "enableAcceleratedNetworking": {
+            "value": "[parameters('enableAcceleratedNetworking')]"
+          },
+          "SQLISOLocation": {
+            "value": "[parameters('SQLISOLocation')]"
           },
           "imageOffer": {
             "value": "[parameters('sqlVMImage')]"
