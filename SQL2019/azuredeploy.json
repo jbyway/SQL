@@ -41,7 +41,7 @@
        "metadata": {
             "description": "SQL Image Sku"
         },
-        "defaultValue": "SQLDEV"
+        "defaultValue": "2016-datacenter-gensecond"
     },
     "vmCount": {
       "type": "int",

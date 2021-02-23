@@ -66,6 +66,13 @@
                 "description": "Resource ID for existing vnet/subnet to which VM NICs should be attached"
             }
         },
+        "SQLISOLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "UNC Path for SQL ISO"
+            },
+            "defaultValue": "\\\\10.0.0.4\\shared\\SQL2019dev.iso"
+        },
         "enableAcceleratedNetworking": {
             "type": "bool",
             "metadata": {
@@ -138,10 +145,6 @@
         "workloadType": {
             "type": "string",
             "defaultValue": "GENERAL"
-        },
-        "SQLISOLocation": {
-            "type": "string",
-            "defaultValue": "\\\\10.0.0.4\\shared\\SQL2019dev.iso"
         },
         "imagePublisher": {
             "type": "string",
