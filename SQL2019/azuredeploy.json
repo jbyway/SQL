@@ -4,7 +4,7 @@
   "parameters": {
     "location": {
       "type": "string",
-      "defaultValue": "eastus2",
+      "defaultValue": "australiaeast",
       "metadata": {
         "description": "Azure region that supports Availability Zones"
       }
@@ -185,7 +185,7 @@
           "namePrefix": {
             "value": "[parameters('namePrefix')]"
           },
-          "domainName": {
+          "existingDomainName": {
             "value": "[parameters('existingDomainName')]"
           },
           "ouPath": {
