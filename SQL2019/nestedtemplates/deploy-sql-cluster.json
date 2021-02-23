@@ -16,12 +16,6 @@
                 "description": "Naming prefix for each new resource created. 3-char min, 8-char max, lowercase alphanumeric"
             }
         },
-        "domainName": {
-            "type": "string",
-            "metadata": {
-                "description": "DNS domain name for existing Active Directory domain"
-            }
-        },
         "adminUsername": {
             "type": "string",
             "metadata": {
@@ -374,7 +368,7 @@
                     "modulesUrl": "[variables('sqlPrepModulesURL')]",
                     "configurationFunction": "[variables('sqlPrepFunction')]",
                     "properties": {
-                        "domainName": "[parameters('domainName')]",
+                        "domainName": "[parameters('existingDomainName')]",
                         "adminCreds": {
                             "userName": "[parameters('adminUserName')]",
                             "password": "PrivateSettingsRef:adminPassword"
@@ -417,7 +411,7 @@
                     "modulesUrl": "[variables('sqlConfigModulesURL')]",
                     "configurationFunction": "[variables('sqlConfigFunction')]",
                     "properties": {
-                        "domainName": "[parameters('domainName')]",
+                        "domainName": "[parameters('existingDomainName')]",
                         "clusterName": "[variables('clusterName')]",
                         "vmNamePrefix": "[variables('vmNamePrefix')]",
                         "sqlAlwaysOnAvailabilityGroupName": "[variables('agName')]",
