@@ -32,6 +32,9 @@
         "OSDiskType": {
             "type": "string"
         },
+        "SQLISOLocation": {
+            "type": "string"
+        },
         "DataDiskType": {
             "type": "string"
         },
