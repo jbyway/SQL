@@ -332,7 +332,7 @@
                     "_artifactsLocationSasToken": {
                         "value": "[parameters('_artifactsLocationSasToken')]"
                     },
-                    "SQLInstallLocation": {
+                    "SQLISOLocation": {
                         "value": "[parameters('SQLISOLocation')]"
                     },
                     "imagePublisher": {
