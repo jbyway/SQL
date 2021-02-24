@@ -32,6 +32,9 @@
         "OSDiskType": {
             "type": "string"
         },
+        "VMImageResourceID": {
+            "type": "string"
+        },
         "SQLISOLocation": {
             "type": "string"
         },

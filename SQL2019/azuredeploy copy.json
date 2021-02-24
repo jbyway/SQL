@@ -234,16 +234,13 @@
           "enableAcceleratedNetworking": {
             "value": "[parameters('enableAcceleratedNetworking')]"
           },
-          "VMImageResourceID": {
-            "value": "[parameters('VMImageResourceID')]"
-          },
           "SQLISOLocation": {
             "value": "[parameters('SQLISOLocation')]"
           },
           "tempDbPath": {
             "value": "[parameters('tempDbPath')]"
           },
-
+          
           "imageSKU": {
             "value": "[parameters('sqlVMImageSku')]"
           }, 

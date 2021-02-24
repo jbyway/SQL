@@ -146,6 +146,9 @@
             "type": "string",
             "defaultValue": "GENERAL"
         },
+        "VMImageResourceID": {
+            "type": "string"
+        },
         "imagePublisher": {
             "type": "string",
             "defaultValue": "MicrosoftWindowsServer"
@@ -338,6 +341,9 @@
                     "SQLISOLocation": {
                         "value": "[parameters('SQLISOLocation')]"
                     },
+                    "VMImageResourceID": {
+                        "value": "[parameters('VMImageResourceID')]"
+                    },
                     "imagePublisher": {
                         "value": "[parameters('imagePublisher')]"
                     },
@@ -387,6 +393,7 @@
                             "password": "PrivateSettingsRef:sqlServicePassword"
                         },
                         "numberOfDisks": "[parameters('vmDiskCount')]",
+                        "SQLISOLocation": "[parameters('SQLISOLocation')]",
                         "workloadType": "[parameters('workloadType')]",
                         "databaseEnginePort": "[variables('agListenerPort')]",
                         "probePortNumber": "[variables('agProbePort')]"
