@@ -23,52 +23,23 @@
         "adminPassword": {
             "type": "securestring"
         },
-        "existingDomainName": {
-            "type": "string"
-        },
-        "ouPath": {
-            "type": "string"
-        },
-        "OSDiskType": {
-            "type": "string"
-        },
         "VMImageResourceID": {
-            "type": "string"
-        },
-        "SQLISOLocation": {
-            "type": "string"
-        },
-        "DataDiskType": {
-            "type": "string"
-        },
-        "imagePublisher": {
-            "type": "string"
-        },
-        "imageOffer": {
-            "type": "string"
-        },
-        "imageSKU": {
-            "type": "string"
-        },
-        "imageVersion": {
             "type": "string"
         },
         "zones": {
             "type": "array"
         },
-        "_artifactsLocation": {
+        "ouPath": {
             "type": "string"
-        },
-        "_artifactsLocationSasToken": {
-            "type": "securestring"
         }
     },
     "variables": {
-        },
+        "existingDomainName": "[concat('adminUserName'), 'test']" ######## need to do strip/parse text for domain from username
+    },
     "resources": [
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2017-03-30",
+            "apiVersion": "2020-12-01",
             "location": "[parameters('location')]",
             "name": "[parameters('vmName')]",
             "zones": "[parameters('zones')]",
@@ -90,9 +61,6 @@
                     },
                     "osDisk": {
                         "name": "[concat(parameters('vmName'),'-osdisk')]",
-                        "managedDisk": {
-                            "storageAccountType": "[parameters('OSDiskType')]"
-                        },
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
                     },
@@ -103,10 +71,7 @@
                             "input": {
                                 "diskSizeGB": "[parameters('vmDiskSize')]",
                                 "lun": "[copyIndex('dataDisks')]",
-                                "createOption": "Empty",
-                                "managedDisk": {
-                                    "storageAccountType": "[parameters('DataDiskType')]"
-                                }
+                                "createOption": "Empty"
                             }
                         }
                     ]
@@ -134,9 +99,9 @@
                 "typeHandlerVersion": "1.3",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "name": "[parameters('existingDomainName')]",
+                    "name": "[variables('existingDomainName')]",
                     "ouPath": "[parameters('ouPath')]",
-                    "user": "[concat(parameters('adminUsername'), '@', parameters('existingDomainName'))]",
+                    "user": "[parameters('adminUsername')]",
                     "restart": "true",
                     "options": "3",
                     "NumberOfRetries": 4,
@@ -146,7 +111,7 @@
                     "password": "[parameters('adminPassword')]"
                 }
             }
-        },
+        }
     ],
     "outputs": {
         "vmName": {
