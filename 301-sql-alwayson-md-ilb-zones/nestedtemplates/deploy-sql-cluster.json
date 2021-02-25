@@ -25,7 +25,7 @@
         "adminUsername": {
             "type": "string",
             "metadata": {
-                "description": "Name of the Administrator of the existing Active Directory Domain"
+                "description": "UPN of the Administrator of the existing Active Directory Domain"
             }
         },
         "adminPassword": {
@@ -38,7 +38,7 @@
         "sqlServiceAccount": {
             "type": "string",
             "metadata": {
-                "description": "Name of the user account to be used for the SQL Server service account"
+                "description": "UPN of the user account to be used for the SQL Server service account"
             }
         },
         "sqlServicePassword": {
@@ -91,6 +91,9 @@
         "workloadType": {
             "type": "string",
             "defaultValue": "GENERAL"
+        },
+        "SQLUNCPath": {
+            "type": "string"
         },
         "_artifactsLocation": {
             "type": "string"
@@ -286,6 +289,7 @@
                         },
                         "numberOfDisks": "[parameters('vmDiskCount')]",
                         "workloadType": "[parameters('workloadType')]",
+                        "SQLUNCPath": "[parameters('SQLUNCPath')]",
                         "databaseEnginePort": "[variables('agListenerPort')]",
                         "probePortNumber": "[variables('agProbePort')]"
                     }
@@ -351,73 +355,6 @@
                         "adminPassword": "[parameters('adminPassword')]",
                         "sqlServicePassword": "[parameters('sqlServicePassword')]",
                         "witnessStorageKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts',variables('witnessStorageName')), '2019-06-01').keys[0].value]"
-                    }
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2020-10-01",
-            "name": "[concat(variables('vmNamePrefix'),'lbbepool')]",
-            "condition": "[equals(parameters('enableOutboundInternet'),'No')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('vmNamePrefix'),'0'), 'sqlConfig')]"
-            ],
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[variables('lbBEPoolTemplateURL')]"
-                },
-                "parameters": {
-                    "location": {
-                        "value": "[parameters('location')]"
-                    },
-                    "vmNamePrefix": {
-                        "value": "[variables('vmNamePrefix')]"
-                    },
-                    "vmCount": {
-                        "value": "[parameters('vmCount')]"
-                    },
-                    "subnetId": {
-                        "value": "[parameters('subnetId')]"
-                    },
-                    "lbBEAddressPoolID": {
-                        "value": "[variables('lbBEAddressPoolID')]"
-                    }
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2020-10-01",
-            "name": "[concat(variables('vmNamePrefix'),'albbepool')]",
-            "condition": "[equals(parameters('enableOutboundInternet'),'Yes')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('vmNamePrefix'),'0'), 'sqlConfig')]"
-            ],
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[variables('albBEPoolTemplateURL')]"
-                },
-                "parameters": {
-                    "location": {
-                        "value": "[parameters('location')]"
-                    },
-                    "vmNamePrefix": {
-                        "value": "[variables('vmNamePrefix')]"
-                    },
-                    "vmCount": {
-                        "value": "[parameters('vmCount')]"
-                    },
-                    "subnetId": {
-                        "value": "[parameters('subnetId')]"
-                    },
-                    "lbBEAddressPoolID": {
-                        "value": "[variables('lbBEAddressPoolID')]"
-                    },
-                    "albBEAddressPoolID": {
-                        "value": "[variables('albBEAddressPoolID')]"
                     }
                 }
             }

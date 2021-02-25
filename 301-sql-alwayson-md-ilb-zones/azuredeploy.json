@@ -6,7 +6,8 @@
       "type": "string",
       "metadata": {
         "description": "Azure region that supports Availability Zones"
-      }
+      },
+      "defaultValue": "australiaeast"
     },
     "namePrefix": {
       "type": "string",
@@ -53,7 +54,7 @@
       },
       "defaultValue": 2
     },
-    "existingDomainName": {
+    "domainName": {
       "type": "string",
       "metadata": {
         "description": "DNS domain name for existing Active Directory domain"
@@ -62,7 +63,7 @@
     "adminUsername": {
       "type": "string",
       "metadata": {
-        "description": "Name of the Administrator of the existing Active Directory Domain"
+        "description": "UPN of the Administrator of the existing Active Directory Domain with Domain Join Ability"
       }
     },
     "adminPassword": {
@@ -75,7 +76,7 @@
     "sqlServiceAccount": {
       "type": "string",
       "metadata": {
-        "description": "Name of the user account to be used for the SQL Server service account. Do not use the same account speficied in adminUsername parameter"
+        "description": "UPN of the user account to be used for the SQL Server service account. Do not use the same account specified in adminUsername parameter"
       }
     },
     "sqlServicePassword": {
@@ -104,16 +105,12 @@
         "description": "Name of the existing subnet in the existing VNET to which the SQL Server VMs should be deployed"
       }
     },
-    "enableOutboundInternet": {
+    "SQLUNCPath": {
       "type": "string",
-      "allowedValues": [
-        "Yes",
-        "No"
-      ],
-      "defaultValue": "No",
       "metadata": {
-        "description": "Enable outbound Internet access via source NAT to support ongoing VM Agent extension communication needs"
-      }
+        "description": "UNC Path of existing SQL 2019 extracted Installation Files"
+      },
+      "defaultValue": "\\\\dc1\\shared\\sql2019ent\\"
     },
     "_artifactsLocation": {
       "type": "string",
@@ -154,7 +151,7 @@
             "value": "[parameters('namePrefix')]"
           },
           "domainName": {
-            "value": "[parameters('existingDomainName')]"
+            "value": "[parameters('domainName')]"
           },
           "adminUsername": {
             "value": "[parameters('adminUsername')]"
@@ -171,9 +168,6 @@
           "subnetId": {
             "value": "[variables('subnetId')]"
           },
-          "enableOutboundInternet": {
-            "value": "[parameters('enableOutboundInternet')]"
-          },
           "vmSize": {
             "value": "[parameters('vmSize')]"
           },
@@ -188,6 +182,9 @@
           },
           "vmDiskCount": {
             "value": "[parameters('vmDiskCount')]"
+          },
+          "SQLUNCPath": {
+            "value": "[parameters('SQLUNCPath')]"
           },
           "_artifactsLocation": {
             "value": "[parameters('_artifactsLocation')]"

@@ -22,7 +22,7 @@ configuration PrepSQLAO
         [UInt32]$NumberOfDisks,
 
         [Parameter(Mandatory)]
-        [String]$SQLISOLocation,
+        [String]$SQLUNCPath,
 
         [Parameter(Mandatory)]
         [String]$WorkloadType,
@@ -55,22 +55,13 @@ configuration PrepSQLAO
 
     Node localhost
     {
-        xSqlCreateVirtualDataDisk NewVirtualDisk
-        {
-            NumberOfDisks = $NumberOfDisks
-            NumberOfColumns = $NumberOfDisks
-            DiskLetter = $NextAvailableDiskLetter
-            OptimizationType = $WorkloadType
-            StartingDeviceID = 2
-            RebootVirtualMachine = $RebootVirtualMachine
-        }
 
         File InstallationFolder 
         {
             Ensure = 'Present'
             Type = 'Directory'
-            SourcePath = $SQLISOLocation
-            DestinationPath = "C:\SQL2019\"
+            SourcePath = $SQLUNCPath
+            DestinationPath = "C:\SQLInstall\"
             Recurse = $true
         }
 
@@ -106,23 +97,6 @@ configuration PrepSQLAO
             GetScript = 'Import-Module -Name SqlServer -ErrorAction SilentlyContinue; @{Ensure = if (Get-Module -Name SqlServer) {"Present"} else {"Absent"}}'
         }
 
-        xWaitForADDomain DscForestWait 
-        { 
-            DomainName = $DomainName 
-            DomainUserCredential= $DomainCreds
-            RetryCount = $RetryCount 
-            RetryIntervalSec = $RetryIntervalSec 
-	        DependsOn = "[WindowsFeature]ADPS"
-        }
-        
-        xComputer DomainJoin
-        {
-            Name = $env:COMPUTERNAME
-            DomainName = $DomainName
-            Credential = $DomainCreds
-	        DependsOn = "[xWaitForADDomain]DscForestWait"
-        }
-
         xFirewall DatabaseEngineFirewallRule
         {
             Direction = "Inbound"
@@ -149,21 +123,6 @@ configuration PrepSQLAO
             Access = "Allow"
             Protocol = "TCP"
             LocalPort = $DatabaseMirrorPort -as [String]
-            Ensure = "Present"
-            DependsOn = "[xComputer]DomainJoin"
-        }
-
-        xFirewall LoadBalancerProbePortFirewallRule
-        {
-            Direction = "Inbound"
-            Name = "SQL-Server-Probe-Port-TCP-In"
-            DisplayName = "SQL Server Probe Port (TCP-In)"
-            Description = "Inbound rule to allow TCP traffic for the Load Balancer Probe Port."
-            DisplayGroup = "SQL Server"
-            State = "Enabled"
-            Access = "Allow"
-            Protocol = "TCP"
-            LocalPort = $ProbePortNumber -as [String]
             Ensure = "Present"
             DependsOn = "[xComputer]DomainJoin"
         }
