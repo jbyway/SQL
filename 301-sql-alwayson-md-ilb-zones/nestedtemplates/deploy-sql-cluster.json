@@ -22,7 +22,7 @@
                 "description": "DNS domain name for existing Active Directory domain"
             }
         },
-                "ouPath": {
+        "ouPath": {
             "type": "string",
             "metadata": {
                 "description": "OU Path for server object to be created in domain"
