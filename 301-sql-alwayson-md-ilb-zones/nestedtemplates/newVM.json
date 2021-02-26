@@ -11,12 +11,6 @@
         "vmSize": {
             "type": "string"
         },
-        "vmDiskCount": {
-            "type": "int"
-        },
-        "vmDiskSize": {
-            "type": "int"
-        },
         "adminUsername": {
             "type": "string"
         },
@@ -34,9 +28,42 @@
         },
         "ouPath": {
             "type": "string"
+        },
+        "SQLDataDiskSize": {
+            "type": "int"
+        },
+        "SQLLogDiskSize": {
+            "type": "int"
+        },
+        "SQLDataDiskCount": {
+            "type": "int"
+        },
+        "SQLLogDiskCount": {
+            "type": "int"
+        },
+        "SQLTempDBDiskSize": {
+            "type": "int"
+        },
+        "DataDiskLoopTemplateURL": {
+            "type": "string"
         }
     },
-    "variables": {},
+    "variables": {
+        "SQLdataDisks": {
+            "createOption": "empty",
+            "caching": "ReadOnly",
+            "writeAcceleratorEnabled": false,
+            "storageAccountType": "Premium_LRS",
+            "diskSizeGB": "[parameters('SQLDataDiskSize')]"
+        },
+        "SQLLogDisks": {
+            "createOption": "empty",
+            "caching": "None",
+            "writeAcceleratorEnabled": false,
+            "storageAccountType": "Premium_LRS",
+            "diskSizeGB": "[parameters('SQLLogDiskSize')]"
+        }
+    },
     "resources": [
         {
             "type": "Microsoft.Compute/virtualMachines",
@@ -68,15 +95,52 @@
                     "imageReference": {
                         "id": "[parameters('VMImageResourceID')]"
                     },
-                    "copy": [
+                    "datadisks": [
                         {
-                            "name": "dataDisks",
-                            "count": "[parameters('vmDiskCount')]",
-                            "input": {
-                                "diskSizeGB": "[parameters('vmDiskSize')]",
-                                "lun": "[copyIndex('dataDisks')]",
-                                "createOption": "Empty"
+                            "name": "SQLTempDbDisk",
+                            "lun": 0,
+                            "createOption": "Empty",
+                            "caching": "None",
+                            "diskSizeGB": "[parameters('SQLTempDBDiskSize')]",
+                            "managedDisk": {
+                                "storageAccountType": "Premium_LRS"
                             }
+                        },
+                        {
+                            "copy": [
+                                {
+                                    "name": "SQLdataDisks",
+                                    "count": "[parameters('SQLDataDiskCount')]",
+                                    "input": {
+                                        "lun": "[add(copyIndex('SQLdataDisks'), 1)]",
+                                        "createOption": "[variables('SQLdataDisks').createOption]",
+                                        "caching": "[variables('SQLdataDisks').caching]",
+                                        "writeAcceleratorEnabled": "[variables('SQLdataDisks').writeAcceleratorEnabled]",
+                                        "diskSizeGB": "[variables('SQLdataDisks').diskSizeGB]",
+                                        "managedDisk": {
+                                            "storageAccountType": "[variables('SQLdataDisks').storageAccountType]"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "copy": [
+                                {
+                                    "name": "SQLLogDisks",
+                                    "count": "[parameters('SQLLogDiskCount')]",
+                                    "input": {
+                                        "lun": "[add(copyIndex('SQLLogDisks'), parameters('SQLDataDiskCount'))]",
+                                        "createOption": "[variables('SQLLogDisks').createOption]",
+                                        "caching": "[variables('SQLLogDisks').caching]",
+                                        "writeAcceleratorEnabled": "[variables('SQLLogDisks').writeAcceleratorEnabled]",
+                                        "diskSizeGB": "[variables('SQLLogDisks').diskSizeGB]",
+                                        "managedDisk": {
+                                            "storageAccountType": "[variables('SQLLogDisks').storageAccountType]"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     ]
                 },

@@ -36,7 +36,7 @@
       },
       "defaultValue": 2
     },
-    "vmDiskSize": {
+    "SQLDataDiskSize": {
       "type": "int",
       "minValue": 128,
       "maxValue": 1023,
@@ -45,14 +45,41 @@
       },
       "defaultValue": 1023
     },
-    "vmDiskCount": {
+    "SQLLogDiskSize": {
       "type": "int",
-      "minValue": 2,
-      "maxValue": 32,
+      "minValue": 128,
+      "maxValue": 1023,
       "metadata": {
-        "description": "Number of data disks on each SQL Server VM (Min=2, Max=32). Ensure that the VM size you've selected will support this number of data disks."
+        "description": "Size of each data disk in GB on each SQL Server VM (Min=128, Max=1023)"
       },
-      "defaultValue": 2
+      "defaultValue": 1023
+    },
+    "SQLDataDiskCount": {
+      "type": "int",
+      "minValue": 1,
+      "maxValue": 16,
+      "metadata": {
+        "description": ""
+      },
+      "defaultValue": 1
+    },
+    "SQLLogDiskCount": {
+      "type": "int",
+      "minValue": 1,
+      "maxValue": 16,
+      "metadata": {
+        "description": ""
+      },
+      "defaultValue": 1
+    },
+    "SQLTempDBDiskSize": {
+      "type": "int",
+      "minValue": 128,
+      "maxValue": 1023,
+      "metadata": {
+        "description": "Size of your TempDB Drive. Default Path Will be E: Drive for new deployments"
+      },
+      "defaultValue": 128
     },
     "domainName": {
       "type": "string",
@@ -177,11 +204,20 @@
           "vmCount": {
             "value": "[parameters('vmCount')]"
           },
-          "vmDiskSize": {
-            "value": "[parameters('vmDiskSize')]"
+          "SQLDataDiskSize": {
+            "value": "[parameters('SQLDataDiskSize')]"
           },
-          "vmDiskCount": {
-            "value": "[parameters('vmDiskCount')]"
+          "SQLDataDiskCount": {
+            "value": "[parameters('SQLDataDiskCount')]"
+          },
+          "SQLLogDiskSize": {
+            "value": "[parameters('SQLDataDiskSize')]"
+          },
+          "SQLLogDiskCount": {
+            "value": "[parameters('SQLDataDiskCount')]"
+          },
+          "SQLTempDBDiskSize": {
+            "value": "[parameters('SQLTempDBDiskSize')]"
           },
           "SQLUNCPath": {
             "value": "[parameters('SQLUNCPath')]"
