@@ -117,6 +117,7 @@
         "agEpName": "[concat(variables('vmNamePrefix'),'ha')]",
         "agListenerPort": 1433,
         "agProbePort": 59999,
+        "agListenerIPAddress": "10.0.11.101",
         "zones": [ "1", "2", "3" ]
     },
     "resources": [
@@ -312,31 +313,28 @@
         {
             "type": "Microsoft.SqlVirtualMachine/SqlVirtualMachines",
             "apiVersion": "2017-03-01-preview",
-            "name": "[variables('vmNamePrefix')]",
+            "name": "[concat(variables('vmNamePrefix'), copyIndex())]",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "virtualMachineLoop",
                 "virtualMachineExtensionLoop",
-                "clusterIpLoop",
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
+                "clusterIpLoop"
             ],
             "properties": {
-                "virtualMachineResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]",
+                "virtualMachineResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('vmNamePrefix'))]",
                 "sqlManagement": "Full",
                 "SqlServerLicenseType": "PAYG",
                 "StorageConfigurationSettings": {
-                    "DiskConfigurationType": "[variables('diskConfigurationType')]",
-                    "StorageWorkloadType": "[parameters('storageWorkloadType')]",
                     "SQLDataSettings": {
-                        "LUNs": "[variables('dataDisksLUNs')]",
-                        "DefaultFilePath": "[parameters('dataPath')]"
+                        "LUNs": "[parameters('SQLDataDiskCount')]",
+                        "DefaultFilePath": "G:\\\\SQLData"
                     },
                     "SQLLogSettings": {
-                        "Luns": "[variables('logDisksLUNs')]",
-                        "DefaultFilePath": "[parameters('logPath')]"
+                        "Luns": "[parameters('SQLLogDiskCount')]",
+                        "DefaultFilePath": "H:\\\\SQLLogs"
                     },
                     "SQLTempDbSettings": {
-                        "DefaultFilePath": "[variables('tempDbPath')]"
+                        "DefaultFilePath": "F:\\\\SQLtempDb"
                     }
                 }
             }
@@ -369,7 +367,7 @@
                         "sqlAlwaysOnEndpointName": "[variables('agEpName')]",
                         "vmCount": "[parameters('vmCount')]",
                         "clusterIpAddresses": "[reference(resourceId('Microsoft.Resources/deployments', concat(variables('vmNamePrefix'),sub(parameters('vmCount'),1),'-clusterIp'))).outputs.result.value]",
-                        "agListenerIpAddress": "[reference(resourceId('Microsoft.Network/loadbalancers', variables('lbName'))).frontendIPConfigurations[0].properties.privateIPAddress]",
+                        "agListenerIpAddress": "[variables('agListenerIPAddress')]",
                         "workloadType": "[parameters('workloadType')]",
                         "databaseEnginePort": "[variables('agListenerPort')]",
                         "probePortNumber": "[variables('agProbePort')]",
