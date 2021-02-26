@@ -110,8 +110,8 @@
                                     "count": "[parameters('SQLDataDiskCount')]",
                                     "mode": "serial",
                                     "input": {
-                                        "name": "[concat(parameters('vmName'), 'SQLDataDisk-', copyIndex())]",
-                                        "lun": "[add(copyIndex('SQLdataDisks'), 1)]",
+                                        "name": "[concat(parameters('vmName'), 'SQLDataDisk-', copyIndex('dataDisks'))]",
+                                        "lun": "[add(copyIndex('dataDisks'), 1)]",
                                         "createOption": "[variables('SQLdataDisks').createOption]",
                                         "caching": "[variables('SQLdataDisks').caching]",
                                         "writeAcceleratorEnabled": "[variables('SQLdataDisks').writeAcceleratorEnabled]",
@@ -130,8 +130,8 @@
                                     "count": "[parameters('SQLLogDiskCount')]",
                                     "mode": "serial",
                                     "input": {
-                                        "name": "[concat(parameters('vmName'), 'SQLLogDisk', copyIndex())]",
-                                        "lun": "[add(copyIndex('SQLLogDisks'), parameters('SQLDataDiskCount'))]",
+                                        "name": "[concat(parameters('vmName'), 'SQLLogDisk', copyIndex('dataDisks'))]",
+                                        "lun": "[add(copyIndex('dataDisks'), parameters('SQLDataDiskCount'))]",
                                         "createOption": "[variables('SQLLogDisks').createOption]",
                                         "caching": "[variables('SQLLogDisks').caching]",
                                         "writeAcceleratorEnabled": "[variables('SQLLogDisks').writeAcceleratorEnabled]",
