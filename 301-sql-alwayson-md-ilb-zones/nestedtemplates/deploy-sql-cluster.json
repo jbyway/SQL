@@ -107,7 +107,6 @@
         "vmNamePrefix": "[concat(parameters('namePrefix'),'-sql-')]",
         "clusterName": "[concat(variables('vmNamePrefix'),'c')]",
         "vmLoopTemplateURL": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/newVM.json',parameters('_artifactsLocationSasToken')))]",
-        "DataDiskLoopTemplateURL": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/newDataDisk.json',parameters('_artifactsLocationSasToken')))]",
         "ipLoopTemplateURL": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/getIpAddress.json',parameters('_artifactsLocationSasToken')))]",
         "sqlPrepModulesURL": "[uri(parameters('_artifactsLocation'), concat('dsc/prep-sqlao.ps1.zip',parameters('_artifactsLocationSasToken')))]",
         "sqlPrepFunction": "PrepSQLAO.ps1\\PrepSQLAO",
@@ -296,7 +295,6 @@
                             "userName": "[parameters('sqlServiceAccount')]",
                             "password": "PrivateSettingsRef:sqlServicePassword"
                         },
-                        "numberOfDisks": "[parameters('vmDiskCount')]",
                         "workloadType": "[parameters('workloadType')]",
                         "SQLUNCPath": "[parameters('SQLUNCPath')]",
                         "databaseEnginePort": "[variables('agListenerPort')]",
@@ -314,7 +312,7 @@
         {
             "type": "Microsoft.SqlVirtualMachine/SqlVirtualMachines",
             "apiVersion": "2017-03-01-preview",
-            "name": "[parameters('virtualMachineName')]",
+            "name": "[variables('vmNamePrefix')]",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "virtualMachineLoop",
@@ -342,7 +340,7 @@
                     }
                 }
             }
-        }
+        },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(variables('vmNamePrefix'),'0/sqlConfig')]",
@@ -372,7 +370,6 @@
                         "vmCount": "[parameters('vmCount')]",
                         "clusterIpAddresses": "[reference(resourceId('Microsoft.Resources/deployments', concat(variables('vmNamePrefix'),sub(parameters('vmCount'),1),'-clusterIp'))).outputs.result.value]",
                         "agListenerIpAddress": "[reference(resourceId('Microsoft.Network/loadbalancers', variables('lbName'))).frontendIPConfigurations[0].properties.privateIPAddress]",
-                        "numberOfDisks": "[parameters('vmDiskCount')]",
                         "workloadType": "[parameters('workloadType')]",
                         "databaseEnginePort": "[variables('agListenerPort')]",
                         "probePortNumber": "[variables('agProbePort')]",

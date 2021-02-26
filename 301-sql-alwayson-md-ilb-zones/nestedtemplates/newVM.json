@@ -43,9 +43,6 @@
         },
         "SQLTempDBDiskSize": {
             "type": "int"
-        },
-        "DataDiskLoopTemplateURL": {
-            "type": "string"
         }
     },
     "variables": {
