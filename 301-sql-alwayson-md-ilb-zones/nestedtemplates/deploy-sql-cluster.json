@@ -22,6 +22,12 @@
                 "description": "DNS domain name for existing Active Directory domain"
             }
         },
+                "ouPath": {
+            "type": "string",
+            "metadata": {
+                "description": "OU Path for server object to be created in domain"
+            }
+        },
         "adminUsername": {
             "type": "string",
             "metadata": {
@@ -259,6 +265,9 @@
                     },
                     "domainName": {
                         "value": "[parameters('domainName')]"
+                    },
+                    "ouPath": {
+                        "value": "[parameters('ouPath')]"
                     },
                     "VMImageResourceID": {
                         "value": "[parameters('VMImageResourceID')]"

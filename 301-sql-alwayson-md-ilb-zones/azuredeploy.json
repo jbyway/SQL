@@ -87,6 +87,12 @@
         "description": "DNS domain name for existing Active Directory domain"
       }
     },
+    "ouPath": {
+      "type": "string",
+      "metadata": {
+        "description": "OU Path for server object to be created in domain"
+      }
+    },
     "adminUsername": {
       "type": "string",
       "metadata": {
@@ -127,7 +133,7 @@
     },
     "existingSubnetName": {
       "type": "string",
-      "defaultValue": "sqlSubnet",
+      "defaultValue": "SQLAOAGSubnet",
       "metadata": {
         "description": "Name of the existing subnet in the existing VNET to which the SQL Server VMs should be deployed"
       }
@@ -179,6 +185,9 @@
           },
           "domainName": {
             "value": "[parameters('domainName')]"
+          },
+          "ouPath": {
+            "value": "[parameters('ouPath')]"
           },
           "adminUsername": {
             "value": "[parameters('adminUsername')]"
