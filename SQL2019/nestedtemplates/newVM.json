@@ -32,6 +32,9 @@
         "OSDiskType": {
             "type": "string"
         },
+        "VMImageResourceID": {
+            "type": "string"
+        },
         "SQLISOLocation": {
             "type": "string"
         },
@@ -83,10 +86,7 @@
                 },
                 "storageProfile": {
                     "imageReference": {
-                        "publisher": "[parameters('imagePublisher')]",
-                        "offer": "[parameters('imageOffer')]",
-                        "sku": "[parameters('imageSku')]",
-                        "version": "[parameters('imageVersion')]"
+                        "id": "[parameters('VMImageResourceID')]"
                     },
                     "osDisk": {
                         "name": "[concat(parameters('vmName'),'-osdisk')]",

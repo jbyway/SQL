@@ -1,3 +1,6 @@
+﻿#
+# Copyright="© Microsoft Corporation. All rights reserved."
+#
 
 configuration PrepSQLAO
 {
@@ -22,9 +25,6 @@ configuration PrepSQLAO
         [UInt32]$NumberOfDisks,
 
         [Parameter(Mandatory)]
-        [String]$SQLISOLocation,
-
-        [Parameter(Mandatory)]
         [String]$WorkloadType,
 
         [String]$DomainNetbiosName=(Get-NetBIOSName -DomainName $DomainName),
@@ -33,7 +33,7 @@ configuration PrepSQLAO
         [Int]$RetryIntervalSec=30
     )
 
-    Import-DscResource -ModuleName xComputerManagement,CDisk,xActiveDirectory,XDisk,SqlServerDsc,xNetworking
+    Import-DscResource -ModuleName xComputerManagement,CDisk,xActiveDirectory,XDisk,xSql,xNetworking
     [System.Management.Automation.PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($Admincreds.UserName)", $Admincreds.Password)
     [System.Management.Automation.PSCredential]$DomainFQDNCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
     [System.Management.Automation.PSCredential]$SQLCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($SQLServicecreds.UserName)", $SQLServicecreds.Password)
@@ -63,15 +63,6 @@ configuration PrepSQLAO
             OptimizationType = $WorkloadType
             StartingDeviceID = 2
             RebootVirtualMachine = $RebootVirtualMachine
-        }
-
-        File InstallationFolder 
-        {
-            Ensure = 'Present'
-            Type = 'Directory'
-            SourcePath = $SQLISOLocation
-            DestinationPath = "C:\SQL2019\"
-            Recurse = $true
         }
 
         WindowsFeature FC
@@ -237,7 +228,6 @@ configuration PrepSQLAO
 
     }
 }
-
 function Get-NetBIOSName
 { 
     [OutputType([string])]

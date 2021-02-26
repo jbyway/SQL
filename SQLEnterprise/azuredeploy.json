@@ -177,7 +177,7 @@
   },
   "variables": {
     "vnetRef": "[resourceId(parameters('existingVirtualNetworkRGName'),'Microsoft.Network/virtualNetworks',parameters('existingVirtualNetworkName'))]",
-    "deploySqlClusterTemplateURL": "[uri(parameters('_artifactsLocation'),concat('nestedtemplates/deploy-sql-cluster.json', parameters('_artifactsLocationSasToken')))]",
+    "deploySqlClusterTemplateURL": "[uri(parameters('_artifactsLocation'),concat('nestedtemplates/deploy-sql-group.json', parameters('_artifactsLocationSasToken')))]",
     "deploySqlCluster": "deploySqlCluster",
     "dataDisksLuns": "[array(range(0, parameters('vmDiskCount')))]",
     "logDisksLuns": "[array(range(parameters('vmDiskCount'), parameters('vmDiskCount')))]"

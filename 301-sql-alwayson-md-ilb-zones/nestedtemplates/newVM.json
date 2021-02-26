@@ -1,0 +1,193 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "vmName": {
+            "type": "string"
+        },
+        "vmSize": {
+            "type": "string"
+        },
+        "adminUsername": {
+            "type": "string"
+        },
+        "adminPassword": {
+            "type": "securestring"
+        },
+        "VMImageResourceID": {
+            "type": "string"
+        },
+        "zones": {
+            "type": "array"
+        },
+        "domainName": {
+            "type": "string"
+        },
+        "ouPath": {
+            "type": "string"
+        },
+        "SQLDataDiskSize": {
+            "type": "int"
+        },
+        "SQLLogDiskSize": {
+            "type": "int"
+        },
+        "SQLDataDiskCount": {
+            "type": "int"
+        },
+        "SQLLogDiskCount": {
+            "type": "int"
+        },
+        "SQLTempDBDiskSize": {
+            "type": "int"
+        }
+    },
+    "variables": {
+        "SQLdataDisks": {
+            "createOption": "empty",
+            "caching": "ReadOnly",
+            "writeAcceleratorEnabled": false,
+            "storageAccountType": "Premium_LRS",
+            "diskSizeGB": "[parameters('SQLDataDiskSize')]"
+        },
+        "SQLLogDisks": {
+            "createOption": "empty",
+            "caching": "None",
+            "writeAcceleratorEnabled": false,
+            "storageAccountType": "Premium_LRS",
+            "diskSizeGB": "[parameters('SQLLogDiskSize')]"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2020-12-01",
+            "location": "[parameters('location')]",
+            "name": "[parameters('vmName')]",
+            "zones": "[parameters('zones')]",
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[parameters('vmName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]",
+                    "windowsConfiguration": {
+                        "timeZone": "AUS Eastern Standard Time"
+                    }
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "name": "[concat(parameters('vmName'),'-osdisk')]",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        }
+                    },
+                    "imageReference": {
+                        "id": "[parameters('VMImageResourceID')]"
+                    },
+                    "datadisks": [
+                        {
+                            "name": "SQLTempDbDisk",
+                            "lun": 0,
+                            "createOption": "Empty",
+                            "caching": "None",
+                            "diskSizeGB": "[parameters('SQLTempDBDiskSize')]",
+                            "managedDisk": {
+                                "storageAccountType": "Premium_LRS"
+                            }
+                        },
+                        {
+                            "copy": [
+                                {
+                                    "name": "SQLdataDisks",
+                                    "count": "[parameters('SQLDataDiskCount')]",
+                                    "input": {
+                                        "lun": "[add(copyIndex('SQLdataDisks'), 1)]",
+                                        "createOption": "[variables('SQLdataDisks').createOption]",
+                                        "caching": "[variables('SQLdataDisks').caching]",
+                                        "writeAcceleratorEnabled": "[variables('SQLdataDisks').writeAcceleratorEnabled]",
+                                        "diskSizeGB": "[variables('SQLdataDisks').diskSizeGB]",
+                                        "managedDisk": {
+                                            "storageAccountType": "[variables('SQLdataDisks').storageAccountType]"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "copy": [
+                                {
+                                    "name": "SQLLogDisks",
+                                    "count": "[parameters('SQLLogDiskCount')]",
+                                    "input": {
+                                        "lun": "[add(copyIndex('SQLLogDisks'), parameters('SQLDataDiskCount'))]",
+                                        "createOption": "[variables('SQLLogDisks').createOption]",
+                                        "caching": "[variables('SQLLogDisks').caching]",
+                                        "writeAcceleratorEnabled": "[variables('SQLLogDisks').writeAcceleratorEnabled]",
+                                        "diskSizeGB": "[variables('SQLLogDisks').diskSizeGB]",
+                                        "managedDisk": {
+                                            "storageAccountType": "[variables('SQLLogDisks').storageAccountType]"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(parameters('vmName'),'-nic'))]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": false
+                    }
+                },
+                "licenseType": "Windows_Server"
+            }
+        },
+        {
+            "apiVersion": "2018-10-01",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('vmName'), '/joindomain')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "JsonADDomainExtension",
+                "typeHandlerVersion": "1.3",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "name": "[parameters('domainName')]",
+                    "ouPath": "[parameters('ouPath')]",
+                    "user": "[parameters('adminUsername')]",
+                    "restart": "true",
+                    "options": "3",
+                    "NumberOfRetries": 4,
+                    "RetryIntervalInMilliseconds": 30000
+                },
+                "protectedSettings": {
+                    "password": "[parameters('adminPassword')]"
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "vmName": {
+            "type": "string",
+            "value": "[parameters('vmName')]"
+        }
+    }
+}

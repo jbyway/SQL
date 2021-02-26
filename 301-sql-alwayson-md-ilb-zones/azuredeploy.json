@@ -4,10 +4,10 @@
   "parameters": {
     "location": {
       "type": "string",
-      "defaultValue": "australiaeast",
       "metadata": {
         "description": "Azure region that supports Availability Zones"
-      }
+      },
+      "defaultValue": "australiaeast"
     },
     "namePrefix": {
       "type": "string",
@@ -25,23 +25,7 @@
       "defaultValue": "Standard_DS3_v2"
     },
     "VMImageResourceID": {
-      "type": "string",
-      "metadata": {
-        "description": "Enter ResourceID of Reference Image"
-      }
-    },
-    "SQLISOLocation": {
-      "type": "string",
-      "metadata": {
-        "description": "Enter the UNC Path where you can copy the SQL ISO from. Include full name and path"
-      }
-    },
-    "sqlVMImageSku": {
-       "type": "string",
-       "metadata": {
-            "description": "SQL Image Sku"
-        },
-        "defaultValue": "2016-datacenter-gensecond"
+      "type": "string"
     },
     "vmCount": {
       "type": "int",
@@ -52,7 +36,7 @@
       },
       "defaultValue": 2
     },
-    "vmDiskSize": {
+    "SQLDataDiskSize": {
       "type": "int",
       "minValue": 128,
       "maxValue": 1023,
@@ -61,38 +45,52 @@
       },
       "defaultValue": 1023
     },
-    "vmDiskCount": {
+    "SQLLogDiskSize": {
       "type": "int",
-      "minValue": 2,
-      "maxValue": 32,
+      "minValue": 128,
+      "maxValue": 1023,
       "metadata": {
-        "description": "Number of data disks on each SQL Server VM (Min=2, Max=32). Ensure that the VM size you've selected will support this number of data disks."
+        "description": "Size of each data disk in GB on each SQL Server VM (Min=128, Max=1023)"
       },
-      "defaultValue": 2
+      "defaultValue": 1023
     },
-    "existingDomainName": {
+    "SQLDataDiskCount": {
+      "type": "int",
+      "minValue": 1,
+      "maxValue": 16,
+      "metadata": {
+        "description": ""
+      },
+      "defaultValue": 1
+    },
+    "SQLLogDiskCount": {
+      "type": "int",
+      "minValue": 1,
+      "maxValue": 16,
+      "metadata": {
+        "description": ""
+      },
+      "defaultValue": 1
+    },
+    "SQLTempDBDiskSize": {
+      "type": "int",
+      "minValue": 128,
+      "maxValue": 1023,
+      "metadata": {
+        "description": "Size of your TempDB Drive. Default Path Will be E: Drive for new deployments"
+      },
+      "defaultValue": 128
+    },
+    "domainName": {
       "type": "string",
       "metadata": {
         "description": "DNS domain name for existing Active Directory domain"
       }
     },
-    "ouPath": {
-      "type": "string",
-      "metadata": {
-        "description": "Enter the OU path for the server objects"
-      }
-    },
-    "agListenerIpAddress": {
-      "type": "string",
-      "metadata": {
-        "description": "Enter the IP address of your AG Listener"
-      },
-      "defaultValue": "10.0.11.50"
-    },
     "adminUsername": {
       "type": "string",
       "metadata": {
-        "description": "Name of the Administrator of the existing Active Directory Domain"
+        "description": "UPN of the Administrator of the existing Active Directory Domain with Domain Join Ability"
       }
     },
     "adminPassword": {
@@ -105,7 +103,7 @@
     "sqlServiceAccount": {
       "type": "string",
       "metadata": {
-        "description": "Name of the user account to be used for the SQL Server service account. Do not use the same account speficied in adminUsername parameter"
+        "description": "UPN of the user account to be used for the SQL Server service account. Do not use the same account specified in adminUsername parameter"
       }
     },
     "sqlServicePassword": {
@@ -121,13 +119,6 @@
         "description": "Resource Group Name for the existing VNET."
       }
     },
-    "tempDbPath": {
-      "type": "string",
-      "metadata": {
-        "description": "Path for tempDb. Default will be local SSD temp disk on Azure VM"
-      },
-      "defaultValue": "D:\\SQLTemp"
-    },
     "existingVirtualNetworkName": {
       "type": "string",
       "metadata": {
@@ -136,36 +127,24 @@
     },
     "existingSubnetName": {
       "type": "string",
-      "defaultValue": "SQLAOAGSubnet",
+      "defaultValue": "sqlSubnet",
       "metadata": {
         "description": "Name of the existing subnet in the existing VNET to which the SQL Server VMs should be deployed"
       }
     },
-    "enableAcceleratedNetworking": {
-      "type": "bool",
-      "defaultValue": false,
-      "metadata": {
-        "description": "Enables Accelerated Networking feature, notice that VM size must support it, this is supported in most of general purpose and compute-optimized instances with 2 or more vCPUs, on instances that supports hyperthreading it is required minimum of 4 vCPUs."
-      }
-    },
-    "workloadType": {
+    "SQLUNCPath": {
       "type": "string",
-      "allowedValues": [
-        "GENERAL",
-        "OLTP",
-        "DW"
-      ],
       "metadata": {
-        "description": "SQL DB workload type: GENERAL - General workload; DW - Data Warehouse workload; OLTP - Transactional Processing workload"
+        "description": "UNC Path of existing SQL 2019 extracted Installation Files"
       },
-      "defaultValue": "GENERAL"
+      "defaultValue": "\\\\dc1\\shared\\sql2019ent\\"
     },
     "_artifactsLocation": {
       "type": "string",
       "metadata": {
         "description": "Location of resources that the script is dependent on such as linked templates and DSC modules"
       },
-      "defaultValue": "https://raw.githubusercontent.com/jbyway/SQL/main/SQL2019/"
+      "defaultValue": "https://raw.githubusercontent.com/jbyway/SQL/main/301-sql-alwayson-md-ilb-zones/"
     },
     "_artifactsLocationSasToken": {
       "type": "securestring",
@@ -176,18 +155,15 @@
     }
   },
   "variables": {
-    "vnetRef": "[resourceId(parameters('existingVirtualNetworkRGName'),'Microsoft.Network/virtualNetworks',parameters('existingVirtualNetworkName'))]",
+    "subnetId": "[resourceId(parameters('existingVirtualNetworkRGName'),'Microsoft.Network/virtualNetworks/subnets',parameters('existingVirtualNetworkName'), parameters('existingSubnetName'))]",
     "deploySqlClusterTemplateURL": "[uri(parameters('_artifactsLocation'),concat('nestedtemplates/deploy-sql-cluster.json', parameters('_artifactsLocationSasToken')))]",
-    "deploySqlCluster": "deploySqlCluster",
-    "dataDisksLuns": "[array(range(0, parameters('vmDiskCount')))]",
-    "logDisksLuns": "[array(range(parameters('vmDiskCount'), parameters('vmDiskCount')))]"
+    "deploySqlCluster": "deploySqlCluster"
   },
   "resources": [
     {
       "name": "[variables('deploySqlCluster')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2015-01-01",
-      "dependsOn": [],
+      "apiVersion": "2020-10-01",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -201,14 +177,8 @@
           "namePrefix": {
             "value": "[parameters('namePrefix')]"
           },
-          "existingDomainName": {
-            "value": "[parameters('existingDomainName')]"
-          },
-          "ouPath": {
-            "value": "[parameters('ouPath')]"
-          },
-          "agListenerIpAddress": {
-            "value": "[parameters('agListenerIpAddress')]"
+          "domainName": {
+            "value": "[parameters('domainName')]"
           },
           "adminUsername": {
             "value": "[parameters('adminUsername')]"
@@ -222,42 +192,35 @@
           "sqlServicePassword": {
             "value": "[parameters('sqlServicePassword')]"
           },
-          "nicVnetUri": {
-            "value": "[variables('vnetRef')]"
-          },
-          "existingSubnetName": {
-            "value": "[parameters('existingSubnetName')]"
+          "subnetId": {
+            "value": "[variables('subnetId')]"
           },
           "vmSize": {
             "value": "[parameters('vmSize')]"
           },
-          "enableAcceleratedNetworking": {
-            "value": "[parameters('enableAcceleratedNetworking')]"
-          },
           "VMImageResourceID": {
             "value": "[parameters('VMImageResourceID')]"
           },
-          "SQLISOLocation": {
-            "value": "[parameters('SQLISOLocation')]"
-          },
-          "tempDbPath": {
-            "value": "[parameters('tempDbPath')]"
-          },
-
-          "imageSKU": {
-            "value": "[parameters('sqlVMImageSku')]"
-          }, 
           "vmCount": {
             "value": "[parameters('vmCount')]"
           },
-          "vmDiskSize": {
-            "value": "[parameters('vmDiskSize')]"
+          "SQLDataDiskSize": {
+            "value": "[parameters('SQLDataDiskSize')]"
           },
-          "vmDiskCount": {
-            "value": "[parameters('vmDiskCount')]"
+          "SQLDataDiskCount": {
+            "value": "[parameters('SQLDataDiskCount')]"
           },
-          "workloadType": {
-            "value": "[parameters('workloadType')]"
+          "SQLLogDiskSize": {
+            "value": "[parameters('SQLDataDiskSize')]"
+          },
+          "SQLLogDiskCount": {
+            "value": "[parameters('SQLDataDiskCount')]"
+          },
+          "SQLTempDBDiskSize": {
+            "value": "[parameters('SQLTempDBDiskSize')]"
+          },
+          "SQLUNCPath": {
+            "value": "[parameters('SQLUNCPath')]"
           },
           "_artifactsLocation": {
             "value": "[parameters('_artifactsLocation')]"
