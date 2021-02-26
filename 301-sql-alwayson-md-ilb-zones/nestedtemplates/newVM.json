@@ -94,7 +94,7 @@
                     },
                     "datadisks": [
                         {
-                            "name": "SQLTempDbDisk",
+                            "name": "[concat(parameters('vmName'), '-SQLTempDbDisk')]",
                             "lun": 0,
                             "createOption": "Empty",
                             "caching": "None",
@@ -106,9 +106,11 @@
                         {
                             "copy": [
                                 {
-                                    "name": "SQLdataDisks",
+                                    "name": "dataDisks",
                                     "count": "[parameters('SQLDataDiskCount')]",
+                                    "mode": "serial",
                                     "input": {
+                                        "name": "[concat(parameters('vmName'), 'SQLDataDisk-', copyIndex())]",
                                         "lun": "[add(copyIndex('SQLdataDisks'), 1)]",
                                         "createOption": "[variables('SQLdataDisks').createOption]",
                                         "caching": "[variables('SQLdataDisks').caching]",
@@ -124,9 +126,11 @@
                         {
                             "copy": [
                                 {
-                                    "name": "SQLLogDisks",
+                                    "name": "dataDisks",
                                     "count": "[parameters('SQLLogDiskCount')]",
+                                    "mode": "serial",
                                     "input": {
+                                        "name": "[concat(parameters('vmName'), 'SQLLogDisk', copyIndex())]",
                                         "lun": "[add(copyIndex('SQLLogDisks'), parameters('SQLDataDiskCount'))]",
                                         "createOption": "[variables('SQLLogDisks').createOption]",
                                         "caching": "[variables('SQLLogDisks').caching]",
