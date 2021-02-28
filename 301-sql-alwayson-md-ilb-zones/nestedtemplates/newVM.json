@@ -46,12 +46,13 @@
         }
     },
     "variables": {
-        "SQLdataDisks": {
+        "SQLTempDBDisk": {
             "createOption": "empty",
             "caching": "ReadOnly",
             "writeAcceleratorEnabled": false,
             "storageAccountType": "Premium_LRS",
-            "diskSizeGB": "[parameters('SQLDataDiskSize')]"
+            "diskIndex": 0,
+            "diskSizeGB": "[parameters('SQLTempDBDiskSize')]"
         },
         "SQLLogDisks": {
             "createOption": "empty",
@@ -59,7 +60,24 @@
             "writeAcceleratorEnabled": false,
             "storageAccountType": "Premium_LRS",
             "diskSizeGB": "[parameters('SQLLogDiskSize')]"
-        }
+        },
+        "SQLDataDisks": {
+            "copy": [
+                {
+                "name": "SQLDataDiskArray",
+                "count": "[parameters('SQLDataDiskCount')]",
+                "input": {
+                    "name": "[concat(parameters('vmName'), '-SQLDataDisk', copyIndex('SQLDataDiskArray', 1))]",
+                    "diskSizeGB": "[parameters('SQLDataDiskSize')]",
+                    "diskIndex": "[concat('SQLDataDiskArray')]"
+                }
+            },
+            {
+                "name": "SQLLogDiskArray",
+                "count": "[parameters('SQLLogDiskCount')]",
+
+            }
+        ]
     },
     "resources": [
         {
@@ -110,7 +128,7 @@
                                     "count": "[parameters('SQLDataDiskCount')]",
                                     "mode": "serial",
                                     "input": {
-                                        "name": "[concat(parameters('vmName'), 'SQLDataDisk-', copyIndex('dataDisks'))]",
+                                        "name": "[concat(parameters('vmName'), 'SQLDataDisk-', copyIndex())]",
                                         "lun": "[add(copyIndex('dataDisks'), 1)]",
                                         "createOption": "[variables('SQLdataDisks').createOption]",
                                         "caching": "[variables('SQLdataDisks').caching]",
@@ -130,7 +148,7 @@
                                     "count": "[parameters('SQLLogDiskCount')]",
                                     "mode": "serial",
                                     "input": {
-                                        "name": "[concat(parameters('vmName'), 'SQLLogDisk', copyIndex('dataDisks'))]",
+                                        "name": "[concat(parameters('vmName'), 'SQLLogDisk', copyIndex())]",
                                         "lun": "[add(copyIndex('dataDisks'), parameters('SQLDataDiskCount'))]",
                                         "createOption": "[variables('SQLLogDisks').createOption]",
                                         "caching": "[variables('SQLLogDisks').caching]",
