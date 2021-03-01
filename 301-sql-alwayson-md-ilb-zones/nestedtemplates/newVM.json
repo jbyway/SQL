@@ -46,16 +46,20 @@
         }
     },
     "variables": {
-        "SQLTempDBDisk": {
-            "name": "[concat(parameters('vmName'), '_SQLTempDBDisk')]",
-            "diskSizeGB": "[parameters('SQLTempDBDiskSize')]",
-            "lun": 0,
-            "createOption": "empty",
-            "caching": "ReadOnly",
-            "writeAcceleratorEnabled": false,
-            "storageType": "Premium_LRS"
-        },
         "copy": [
+            {
+                "name": "SQLTempDBDisk",
+                "count": 1,
+                "input": {
+                    "name": "[concat(parameters('vmName'), '_SQLTempDBDisk')]",
+                    "diskSizeGB": "[parameters('SQLTempDBDiskSize')]",
+                    "lun": 0,
+                    "createOption": "empty",
+                    "caching": "ReadOnly",
+                    "writeAcceleratorEnabled": false,
+                    "storageType": "Premium_LRS"
+                }
+            },
             {
                 "name": "SQLDataDiskArray",
                 "count": "[parameters('SQLDataDiskCount')]",
