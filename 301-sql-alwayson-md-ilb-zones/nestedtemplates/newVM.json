@@ -189,7 +189,7 @@
                             "name": "dataDisks",
                             "count": "[length(variables('SQLDiskAttach'))]",
                             "input": {
-                                "name": "[variables('SQLDiskAttach')[copyIndex('dataDisks')]]",
+                                "name": "[variables('SQLDiskAttach')[copyIndex('dataDisks')].name]",
                                 "createOption": "attach",
                                 "caching": "[variables('SQLDiskAttach')[copyIndex('dataDisks')].caching]",
                                 "lun": "[variables('SQLDiskAttach')[copyIndex('dataDisks')].lun]",
