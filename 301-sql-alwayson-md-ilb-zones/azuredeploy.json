@@ -96,7 +96,7 @@
     "adminUsername": {
       "type": "string",
       "metadata": {
-        "description": "UPN of the Administrator of the existing Active Directory Domain with Domain Join Ability"
+        "description": "UPN of the Administrator of the existing Active Directory Domain with Domain Join Ability. Will also be created as local admin. "
       }
     },
     "adminPassword": {

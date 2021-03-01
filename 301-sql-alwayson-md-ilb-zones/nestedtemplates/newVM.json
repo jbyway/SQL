@@ -87,7 +87,8 @@
                 }
             }
         ],
-        "SQLDiskAttach": "[union(variables('SQLTempDBDiskArray'), variables('SQLDataDiskArray'), variables('SQLLogDiskArray'))]"
+        "SQLDiskAttach": "[union(variables('SQLTempDBDiskArray'), variables('SQLDataDiskArray'), variables('SQLLogDiskArray'))]",
+        "localadminUsername": "[first(split(parameters('adminUsername'), '@'))]"
     },
     "resources": [
         {
@@ -167,7 +168,7 @@
                 },
                 "osProfile": {
                     "computerName": "[parameters('vmName')]",
-                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminUsername": "[variables('localadminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]",
                     "windowsConfiguration": {
                         "timeZone": "AUS Eastern Standard Time"
