@@ -47,12 +47,13 @@
     },
     "variables": {
         "SQLTempDBDisk": {
+            "name": "[concat(parameters('vmName'), '_SQLTempDBDisk')]",
+            "diskSizeGB": "[parameters('SQLTempDBDiskSize')]",
+            "lun": 0,
             "createOption": "empty",
             "caching": "ReadOnly",
             "writeAcceleratorEnabled": false,
-            "storageType": "Premium_LRS",
-            "diskIndex": 0,
-            "diskSizeGB": "[parameters('SQLTempDBDiskSize')]"
+            "storageType": "Premium_LRS"
         },
         "copy": [
             {
@@ -62,7 +63,9 @@
                     "name": "[concat(parameters('vmName'), '_SQLDataDisk', copyIndex('SQLDataDiskArray', 1))]",
                     "diskSizeGB": "[parameters('SQLDataDiskSize')]",
                     "lun": "[copyIndex('SQLDataDiskArray', 1)]",
+                    "createOption": "empty",
                     "caching": "ReadOnly",
+                    "writeAcceleratorEnabled": false,
                     "storageType": "Premium_LRS"
                 }
             },
@@ -73,13 +76,15 @@
                     "name": "[concat(parameters('vmName'), '_SQLLogDisk', add(copyIndex('SQLLogDiskArray'), parameters('SQLDataDiskCount')))]",
                     "diskSizeGB": "[parameters('SQLLogDiskSize')]",
                     "lun": "[add(copyIndex('SQLLogDiskArray', 2), parameters('SQLDataDiskCount'))]",
+                    "createOption": "empty",
                     "caching": "none",
+                    "writeAcceleratorEnabled": false,
                     "storageType": "Premium_LRS"
                 }
             }
         ],
         "SQLDiskAttach": "[union(variables('SQLTempDBDisk'), variables('SQLDataDiskArray'), variables('SQLLogDiskArray'))]"
-            },
+    },
     "resources": [
         {
             "name": "[variables('SQLTempDBDisk')]",
@@ -172,7 +177,7 @@
                         "id": "[parameters('VMImageResourceID')]"
                     },
                     "datadisks": "[variables('SQLDiskAttach')]"
-                       },
+                },
                 "networkProfile": {
                     "networkInterfaces": [
                         {
