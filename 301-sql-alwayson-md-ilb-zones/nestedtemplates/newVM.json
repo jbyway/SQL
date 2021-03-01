@@ -79,7 +79,7 @@
                 "input": {
                     "name": "[concat(parameters('vmName'), '_SQLLogDisk', copyIndex('SQLLogDiskArray', 1))]",
                     "diskSizeGB": "[parameters('SQLLogDiskSize')]",
-                    "lun": "[add(copyIndex('SQLLogDiskArray'), parameters('SQLDataDiskCount'))]",
+                    "lun": "[add(copyIndex('SQLLogDiskArray',1), parameters('SQLDataDiskCount'))]",
                     "createOption": "empty",
                     "caching": "None",
                     "writeAcceleratorEnabled": false,
