@@ -98,7 +98,7 @@
             "zones": "[parameters('zones')]",
             "copy": {
                 "name": "SQLTempDiskCreation",
-                "count": "[length(variables('SQLTempDBDiskArray'))]"
+                "count": 1
             },
             "properties": {
                 "diskSizeGB": "[variables('SQLTempDBDiskArray')[copyIndex('SQLTempDiskCreation')].diskSizeGB]",
