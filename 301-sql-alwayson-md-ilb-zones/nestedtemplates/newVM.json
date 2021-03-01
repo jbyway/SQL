@@ -191,8 +191,8 @@
                             "input": {
                                 "name": "[variables('SQLDiskAttach')[copyIndex('dataDisks')]]",
                                 "createOption": "attach",
-                                "caching": "[variables('SQLDiskAttach')[copyIndex('dataDisks').caching]]",
-                                "lun": "[variables('SQLDiskAttach')[copyIndex('dataDisks').lun]]",
+                                "caching": "[variables('SQLDiskAttach')[copyIndex('dataDisks')].caching]",
+                                "lun": "[variables('SQLDiskAttach')[copyIndex('dataDisks')].lun]",
                                 "managedDisk": {
                                     "id": "[resourceId('Microsoft.Compute/disks', variables('SQLDiskAttach')[copyIndex('dataDisks')].name)]"
                                 }
