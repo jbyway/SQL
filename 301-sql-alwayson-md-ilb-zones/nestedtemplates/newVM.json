@@ -98,7 +98,7 @@
             "zones": "[parameters('zones')]",
             "copy": {
                 "name": "SQLTempDiskCreation",
-                "count": "[length('SQLTempDBDiskArray')]"
+                "count": "[length(variables('SQLTempDBDiskArray'))]"
             },
             "properties": {
                 "diskSizeGB": "[variables('SQLTempDBDiskArray')[copyIndex('SQLTempDiskCreation')].diskSizeGB]",
@@ -188,14 +188,14 @@
                     "copy": [
                         {
                             "name": "dataDisks",
-                            "count": "[length(variables('SQLDataDiskArray'))]",
+                            "count": "[length(variables('SQLDiskAttach'))]",
                             "input": {
-                                "name": "[variables('SQLDataDiskArray')[copyIndex('dataDisks')].name]",
+                                "name": "[variables('SQLDiskAttach')[copyIndex('dataDisks')].name]",
                                 "createOption": "Attach",
-                                "caching": "[variables('SQLDataDiskArray')[copyIndex('dataDisks')].caching]",
-                                "lun": "[variables('SQLDataDiskArray')[copyIndex('dataDisks')].lun]",
+                                "caching": "[variables('SQLDiskAttach')[copyIndex('dataDisks')].caching]",
+                                "lun": "[variables('SQLDiskAttach')[copyIndex('dataDisks')].lun]",
                                 "managedDisk": {
-                                    "id": "[resourceId('Microsoft.Compute/disks', variables('SQLDataDiskArray')[copyIndex('dataDisks')].name)]"
+                                    "id": "[resourceId('Microsoft.Compute/disks', variables('SQLDiskAttach')[copyIndex('dataDisks')].name)]"
                                 }
                             }
 
