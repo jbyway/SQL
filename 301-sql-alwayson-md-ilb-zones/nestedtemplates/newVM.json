@@ -106,7 +106,9 @@
                     "createOption": "empty"
                 }
             },
-            "sku": "[variables('SQLTempDBDiskArray')[copyIndex('SQLTempDiskCreation')].storageType]"
+            "sku": {
+                "name": "[variables('SQLTempDBDiskArray')[copyIndex('SQLTempDiskCreation')].storageType]"
+            }
         },
         {
             "name": "[variables('SQLDataDiskArray')[copyIndex('SQLDataDiskCreation')].name]",
