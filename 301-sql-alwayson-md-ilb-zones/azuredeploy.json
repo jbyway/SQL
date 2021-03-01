@@ -220,10 +220,10 @@
             "value": "[parameters('SQLDataDiskCount')]"
           },
           "SQLLogDiskSize": {
-            "value": "[parameters('SQLDataDiskSize')]"
+            "value": "[parameters('SQLLogDiskSize')]"
           },
           "SQLLogDiskCount": {
-            "value": "[parameters('SQLDataDiskCount')]"
+            "value": "[parameters('SQLLogDiskCount')]"
           },
           "SQLTempDBDiskSize": {
             "value": "[parameters('SQLTempDBDiskSize')]"
