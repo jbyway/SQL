@@ -157,8 +157,7 @@
             "dependson": [
                 "SQLDataDiskCreation",
                 "SQLLogDiskCreation",
-                "SQLTempDiskCreation",
-                "[variables('SQLDiskAttach')]"
+                "SQLTempDiskCreation"
             ],
             "name": "[parameters('vmName')]",
             "zones": "[parameters('zones')]",
