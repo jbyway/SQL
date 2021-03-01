@@ -134,7 +134,7 @@
             "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "zones": "[parameters('zones')]",
-            "Copy": {
+            "copy": {
                 "name": "SQLLogDiskCreation",
                 "count": "[length(variables('SQLLogDiskArray'))]"
             },
@@ -184,7 +184,23 @@
                     "imageReference": {
                         "id": "[parameters('VMImageResourceID')]"
                     },
-                    "datadisks": "[variables('SQLDiskAttach')]"
+                    "copy": [
+                        {
+                            "name": "dataDisks",
+                            "count": "[length(variables('SQLDiskAttach'))]",
+                            "input": {
+                                "name": "[variables('SQLDiskAttach')[copyIndex('dataDisks')]]",
+                                "createOption": "attach",
+                                "caching": "[variables('SQLDiskAttach')[copyIndex('dataDisks').caching]]",
+                                "lun": "[variables('SQLDiskAttach')[copyIndex('dataDisks').lun]]",
+                                "managedDisk": {
+                                    "id": "[resourceId('Microsoft.Compute/disks', variables('SQLDiskAttach')[copyIndex('dataDisks')].name)]"
+                                }
+                            }
+
+                        }
+
+                    ]
                 },
                 "networkProfile": {
                     "networkInterfaces": [
