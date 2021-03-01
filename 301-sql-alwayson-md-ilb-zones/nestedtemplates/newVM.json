@@ -48,7 +48,7 @@
     "variables": {
         "copy": [
             {
-                "name": "SQLTempDBDisk",
+                "name": "SQLTempDBDiskArray",
                 "count": 1,
                 "input": {
                     "name": "[concat(parameters('vmName'), '_SQLTempDBDisk')]",
@@ -87,22 +87,26 @@
                 }
             }
         ],
-        "SQLDiskAttach": "[union(variables('SQLTempDBDisk'), variables('SQLDataDiskArray'), variables('SQLLogDiskArray'))]"
+        "SQLDiskAttach": "[union(variables('SQLTempDBDiskArray'), variables('SQLDataDiskArray'), variables('SQLLogDiskArray'))]"
     },
     "resources": [
         {
-            "name": "[variables('SQLTempDBDisk')]",
+            "name": "[variables('SQLTempDBDiskArray')]",
             "type": "Microsoft.Compute/disks",
             "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "zones": "[parameters('zones')]",
+            "copy": {
+                "name": "SQLTempDiskCreation",
+                "count": "[length('SQLTempDBDiskArray')]"
+            },
             "properties": {
-                "diskSizeGB": "[variables('SQLTempDBDisk').diskSizeGB]",
+                "diskSizeGB": "[variables('SQLTempDBDiskArray')[copyIndex('SQLTempDiskCreation')].diskSizeGB]",
                 "creationData": {
                     "createOption": "Empty"
                 }
             },
-            "sku": "[variables('SQLTempDBDisk').storageType]"
+            "sku": "[variables('SQLTempDBDiskArray')[copyIndex('SQLTempDiskCreation')].storageType]"
         },
         {
             "name": "[variables('SQLDataDiskArray')[copyIndex('SQLDataDiskCreation')].name]",
