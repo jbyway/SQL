@@ -91,7 +91,7 @@
     },
     "resources": [
         {
-            "name": "[variables('SQLTempDBDiskArray')]",
+            "name": "[variables('SQLTempDBDiskArray')[copyIndex('SQLTempDiskCreation')].name]",
             "type": "Microsoft.Compute/disks",
             "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
@@ -103,7 +103,7 @@
             "properties": {
                 "diskSizeGB": "[variables('SQLTempDBDiskArray')[copyIndex('SQLTempDiskCreation')].diskSizeGB]",
                 "creationData": {
-                    "createOption": "Empty"
+                    "createOption": "empty"
                 }
             },
             "sku": "[variables('SQLTempDBDiskArray')[copyIndex('SQLTempDiskCreation')].storageType]"
@@ -121,7 +121,7 @@
             "properties": {
                 "diskSizeGB": "[variables('SQLDataDiskArray')[copyIndex('SQLDataDiskCreation')].diskSizeGB]",
                 "creationData": {
-                    "createOption": "Empty"
+                    "createOption": "empty"
                 }
             },
             "sku": {
