@@ -81,7 +81,7 @@
                     "diskSizeGB": "[parameters('SQLLogDiskSize')]",
                     "lun": "[add(copyIndex('SQLLogDiskArray', 2), parameters('SQLDataDiskCount'))]",
                     "createOption": "empty",
-                    "caching": "none",
+                    "caching": "None",
                     "writeAcceleratorEnabled": false,
                     "storageType": "Premium_LRS"
                 }
