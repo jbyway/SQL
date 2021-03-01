@@ -189,14 +189,14 @@
                     "copy": [
                         {
                             "name": "dataDisks",
-                            "count": "[length(variables('SQLDiskAttach'))]",
+                            "count": "[length(variables('SQLDataDiskArray'))]",
                             "input": {
-                                "name": "[variables('SQLDiskAttach')[copyIndex('dataDisks')].name]",
-                                "createOption": "attach",
-                                "caching": "[variables('SQLDiskAttach')[copyIndex('dataDisks')].caching]",
-                                "lun": "[variables('SQLDiskAttach')[copyIndex('dataDisks')].lun]",
+                                "name": "[variables('SQLDataDiskArray')[copyIndex('dataDisks')].name]",
+                                "createOption": "Attach",
+                                "caching": "[variables('SQLDataDiskArray')[copyIndex('dataDisks')].caching]",
+                                "lun": "[variables('SQLDataDiskArray')[copyIndex('dataDisks')].lun]",
                                 "managedDisk": {
-                                    "id": "[resourceId('Microsoft.Compute/disks', variables('SQLDiskAttach')[copyIndex('dataDisks')].name)]"
+                                    "id": "[resourceId('Microsoft.Compute/disks', variables('SQLDataDiskArray')[copyIndex('dataDisks')].name)]"
                                 }
                             }
 
