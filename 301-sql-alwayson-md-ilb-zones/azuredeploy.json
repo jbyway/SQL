@@ -38,7 +38,7 @@
     },
     "SQLDataDiskSize": {
       "type": "int",
-      "minValue": 128,
+      "minValue": 64,
       "maxValue": 1023,
       "metadata": {
         "description": "Size of each data disk in GB on each SQL Server VM (Min=128, Max=1023)"
@@ -47,7 +47,7 @@
     },
     "SQLLogDiskSize": {
       "type": "int",
-      "minValue": 128,
+      "minValue": 64,
       "maxValue": 1023,
       "metadata": {
         "description": "Size of each data disk in GB on each SQL Server VM (Min=128, Max=1023)"
@@ -74,7 +74,7 @@
     },
     "SQLTempDBDiskSize": {
       "type": "int",
-      "minValue": 128,
+      "minValue": 64,
       "maxValue": 1023,
       "metadata": {
         "description": "Size of your TempDB Drive. Default Path Will be E: Drive for new deployments"
