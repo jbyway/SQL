@@ -155,7 +155,7 @@
             "dependson": [
                 "SQLDataDiskCreation",
                 "SQLLogDiskCreation",
-                "[resourceId('Microsoft.Compute/disks', variables('SQLTempDBDisk'))]",
+                "SQLTempDiskCreation",
                 "[variables('SQLDiskAttach')]"
             ],
             "name": "[parameters('vmName')]",
