@@ -50,40 +50,101 @@
             "createOption": "empty",
             "caching": "ReadOnly",
             "writeAcceleratorEnabled": false,
-            "storageAccountType": "Premium_LRS",
+            "storageType": "Premium_LRS",
             "diskIndex": 0,
             "diskSizeGB": "[parameters('SQLTempDBDiskSize')]"
         },
-        "SQLLogDisks": {
-            "createOption": "empty",
-            "caching": "None",
-            "writeAcceleratorEnabled": false,
-            "storageAccountType": "Premium_LRS",
-            "diskSizeGB": "[parameters('SQLLogDiskSize')]"
-        },
-        "SQLDataDisks": {
-            "copy": [
-                {
+        "copy": [
+            {
                 "name": "SQLDataDiskArray",
                 "count": "[parameters('SQLDataDiskCount')]",
                 "input": {
-                    "name": "[concat(parameters('vmName'), '-SQLDataDisk', copyIndex('SQLDataDiskArray', 1))]",
+                    "name": "[concat(parameters('vmName'), '_SQLDataDisk', copyIndex('SQLDataDiskArray', 1))]",
                     "diskSizeGB": "[parameters('SQLDataDiskSize')]",
-                    "diskIndex": "[concat('SQLDataDiskArray')]"
+                    "lun": "[copyIndex('SQLDataDiskArray', 1)]",
+                    "caching": "ReadOnly",
+                    "storageType": "Premium_LRS"
                 }
             },
             {
                 "name": "SQLLogDiskArray",
                 "count": "[parameters('SQLLogDiskCount')]",
-
+                "input": {
+                    "name": "[concat(parameters('vmName'), '_SQLLogDisk', add(copyIndex('SQLLogDiskCount'), parameters('SQLDataDiskCount')))]",
+                    "diskSizeGB": "[parameters('SQLLogDiskSize')]",
+                    "lun": "[add(copyIndex('SQLLogDiskArray', 2), parameters('SQLDataDiskCount'))]",
+                    "caching": "none",
+                    "storageType": "Premium_LRS"
+                }
             }
-        ]
-    },
+        ],
+        "SQLDiskAttach": "[union(variables('SQLTempDBDisk'), variables('SQLDataDiskArray'), variables('SQLLogDiskArray'))]"
+            },
     "resources": [
+        {
+            "name": "[variables('SQLTempDBDisk')]",
+            "type": "Microsoft.Compute/disks",
+            "apiVersion": "2019-07-01",
+            "location": "[resourceGroup().location]",
+            "zones": "[parameters('zones')]",
+            "properties": {
+                "diskSizeGB": "[variables('SQLTempDBDisk').diskSizeGB]",
+                "creationData": {
+                    "createOption": "Empty"
+                }
+            },
+            "sku": "[variables('SQLTempDBDisk').storageType]"
+        },
+        {
+            "name": "[variables('SQLDataDiskArray')[copyIndex('SQLDataDiskCreation')].name]",
+            "type": "Microsoft.Compute/disks",
+            "apiVersion": "2019-07-01",
+            "location": "[resourceGroup().location]",
+            "zones": "[parameters('zones')]",
+            "copy": {
+                "name": "SQLDataDiskCreation",
+                "count": "[length(variables('SQLDataDiskArray'))]"
+            },
+            "properties": {
+                "diskSizeGB": "[variables('SQLDataDiskArray')[copyIndex('SQLDataDiskCreation')].diskSizeGB]",
+                "creationData": {
+                    "createOption": "Empty"
+                }
+            },
+            "sku": {
+                "name": "[variables('SQLDataDiskArray')[copyIndex('SQLDataDiskCreation')].storageType]"
+            }
+        },
+        {
+            "name": "[variables('SQLLogDiskArray')[copyIndex('SQLLogDiskCreation')].name]",
+            "type": "Microsoft.Compute/disks",
+            "apiVersion": "2019-07-01",
+            "location": "[resourceGroup().location]",
+            "zones": "[parameters('zones')]",
+            "Copy": {
+                "name": "SQLLogDiskCreation",
+                "count": "[length(variables('SQLLogDiskArray'))]"
+            },
+            "properties": {
+                "diskSizeGB": "[variables('SQLLogDiskArray')[copyIndex('SQLLogDiskCreation')].diskSizeGB]",
+                "creationData": {
+                    "createOption": "Empty"
+                }
+            },
+            "sku": {
+                "name": "[variables('SQLLogDiskArray')[copyIndex('SQLLogDiskCreation')].storageType]"
+            }
+        },
         {
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2020-12-01",
             "location": "[parameters('location')]",
+            "dependson": [
+                "SQLDataDiskCreation",
+                "SQLLogDiskCreation",
+                "[resourceId('Microsoft.Compute/disks', variables('SQLTempDBDisk'))]",
+                "[variables('SQLDiskAttach')]"
+            ],
             "name": "[parameters('vmName')]",
             "zones": "[parameters('zones')]",
             "properties": {
@@ -110,59 +171,8 @@
                     "imageReference": {
                         "id": "[parameters('VMImageResourceID')]"
                     },
-                    "datadisks": [
-                        {
-                            "name": "[concat(parameters('vmName'), '-SQLTempDbDisk')]",
-                            "lun": 0,
-                            "createOption": "Empty",
-                            "caching": "None",
-                            "diskSizeGB": "[parameters('SQLTempDBDiskSize')]",
-                            "managedDisk": {
-                                "storageAccountType": "Premium_LRS"
-                            }
-                        },
-                        {
-                            "copy": [
-                                {
-                                    "name": "dataDisks",
-                                    "count": "[parameters('SQLDataDiskCount')]",
-                                    "mode": "serial",
-                                    "input": {
-                                        "name": "[concat(parameters('vmName'), 'SQLDataDisk-', copyIndex())]",
-                                        "lun": "[add(copyIndex('dataDisks'), 1)]",
-                                        "createOption": "[variables('SQLdataDisks').createOption]",
-                                        "caching": "[variables('SQLdataDisks').caching]",
-                                        "writeAcceleratorEnabled": "[variables('SQLdataDisks').writeAcceleratorEnabled]",
-                                        "diskSizeGB": "[variables('SQLdataDisks').diskSizeGB]",
-                                        "managedDisk": {
-                                            "storageAccountType": "[variables('SQLdataDisks').storageAccountType]"
-                                        }
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "copy": [
-                                {
-                                    "name": "dataDisks",
-                                    "count": "[parameters('SQLLogDiskCount')]",
-                                    "mode": "serial",
-                                    "input": {
-                                        "name": "[concat(parameters('vmName'), 'SQLLogDisk', copyIndex())]",
-                                        "lun": "[add(copyIndex('dataDisks'), parameters('SQLDataDiskCount'))]",
-                                        "createOption": "[variables('SQLLogDisks').createOption]",
-                                        "caching": "[variables('SQLLogDisks').caching]",
-                                        "writeAcceleratorEnabled": "[variables('SQLLogDisks').writeAcceleratorEnabled]",
-                                        "diskSizeGB": "[variables('SQLLogDisks').diskSizeGB]",
-                                        "managedDisk": {
-                                            "storageAccountType": "[variables('SQLLogDisks').storageAccountType]"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    ]
-                },
+                    "datadisks": "[variables('SQLDiskAttach')]"
+                       },
                 "networkProfile": {
                     "networkInterfaces": [
                         {
