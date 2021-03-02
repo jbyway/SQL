@@ -29,7 +29,7 @@ configuration PrepSQL
         [Parameter()]
         [String]$SQLInstance,
 
-        [Parameter(Mandatory)]
+        [Parameter()]
         [String]$SqlCollation,
 
         [Parameter(Mandatory)]
@@ -42,6 +42,7 @@ configuration PrepSQL
     )
 
     $SQLInstance = "SQL001"
+    $SqlCollation = "Latin1_General_CI_AS"
 
     Import-DscResource -ModuleName xComputerManagement,CDisk,xActiveDirectory,xDisk,SqlServerDsc,xNetworking,xSql
     [System.Management.Automation.PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($Admincreds.UserName)", $Admincreds.Password)
