@@ -26,7 +26,7 @@ configuration PrepSQL
 
         [String]$SQLInstallFiles = "C:\SQLInstall\",
 
-        [Parameter(Mandatory)]
+        [Parameter()]
         [String]$SQLInstance,
 
         [Parameter(Mandatory)]
@@ -40,6 +40,8 @@ configuration PrepSQL
         [Int]$RetryCount=20,
         [Int]$RetryIntervalSec=30
     )
+
+    $SQLInstance = "SQL001"
 
     Import-DscResource -ModuleName xComputerManagement,CDisk,xActiveDirectory,xDisk,SqlServerDsc,xNetworking,xSql
     [System.Management.Automation.PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($Admincreds.UserName)", $Admincreds.Password)
