@@ -1,5 +1,5 @@
 
-configuration PrepSQLAO
+configuration PrepSQL
 {
     param
     (
