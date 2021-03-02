@@ -179,6 +179,7 @@ configuration PrepSQL
             Enabled = $true
             Credential = $Admincreds
             PsDscRunAsCredential = $Admincreds
+            DependsOn = "[SqlSetup]InstallNamedInstance"
         }
 
         xADUser CreateSqlServerServiceAccount
