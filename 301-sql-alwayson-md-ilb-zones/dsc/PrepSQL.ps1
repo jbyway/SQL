@@ -141,10 +141,10 @@ configuration PrepSQL
             InstanceName          = $SqlInstance
             Features              = 'SQLENGINE'
             SQLCollation          = $SqlCollation
-            SQLSvcAccount         = $SqlServiceCredential
+            SQLSvcAccount         = $SQLServiceCreds
             AgtSvcAccount         = $SqlAgentServiceCredential
             ASSvcAccount          = $SqlServiceCredential
-            SQLSysAdminAccounts   = $SqlAdministratorCredential.UserName
+            SQLSysAdminAccounts   = $SQLCreds.UserName
             #ASSysAdminAccounts    = 'COMPANY\SQL Administrators', $SqlAdministratorCredential.UserName
             InstallSharedDir      = 'C:\Program Files\Microsoft SQL Server'
             InstallSharedWOWDir   = 'C:\Program Files (x86)\Microsoft SQL Server'
@@ -161,12 +161,12 @@ configuration PrepSQL
             #ASBackupDir           = 'C:\MSOLAP13.INST2016\Backup'
             #ASTempDir             = 'C:\MSOLAP13.INST2016\Temp'
             SourcePath            = $SQLInstallFiles
-            SourceCredential      = $SqlInstallCredential
+            SourceCredential      = $DomainCreds
             UpdateEnabled         = 'False'
             ForceReboot           = $false
             BrowserSvcStartupType = 'Automatic'
 
-            PsDscRunAsCredential  = $SqlInstallCredential
+            PsDscRunAsCredential  = $SQLCreds
 
             #DependsOn             = '[WindowsFeature]NetFramework35', '[WindowsFeature]NetFramework45'
         }
