@@ -160,7 +160,7 @@ configuration PrepSQL
             #ASLogDir              = 'C:\MSOLAP13.INST2016\Log'
             #ASBackupDir           = 'C:\MSOLAP13.INST2016\Backup'
             #ASTempDir             = 'C:\MSOLAP13.INST2016\Temp'
-            SourcePath            = $SQLInstallFiles
+            SourcePath            = $SQLUNCPath
             SourceCredential      = $DomainCreds
             UpdateEnabled         = 'False'
             ForceReboot           = $false
