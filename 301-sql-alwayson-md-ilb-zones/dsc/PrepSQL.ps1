@@ -18,7 +18,7 @@ configuration PrepSQLAO
 
         [UInt32]$ProbePortNumber = 59999,
 
-        [Parameter(Mandatory)]
+        [Parameter()]
         [UInt32]$NumberOfDisks,
 
         [Parameter(Mandatory)]

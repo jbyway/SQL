@@ -72,7 +72,7 @@
       },
       "defaultValue": 1
     },
-    "SQLTempDBDiskSize": {
+    "SQLTempdbDiskSize": {
       "type": "int",
       "minValue": 64,
       "maxValue": 1023,
