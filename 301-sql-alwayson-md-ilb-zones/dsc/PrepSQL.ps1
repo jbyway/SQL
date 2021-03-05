@@ -47,9 +47,9 @@ configuration PrepSQL
         [String]$DomainNetbiosName = (Get-NetBIOSName -DomainName $DomainName),
 
         [uint32]$DiskAllocationSize = 65536,
-        [string]$SQLTempdbDriveLetter = (Get-DriveLetter -DriveLuns $SQLTempdbLun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLTempdb"),
-        [string]$SQLDataDriveLetter = (Get-DriveLetter -DriveLuns $SQLDataLun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLData"),
-        [string]$SQLLogDriveLetter = (Get-DriveLetter -DriveLuns $SQLLogLun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLLog"),
+        [string]$SQLTempdbDriveLetter = (Get-DriveLetter -DriveLuns $SQLTempdbLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLTempdb"),
+        [string]$SQLDataDriveLetter = (Get-DriveLetter -DriveLuns $SQLDataLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLData"),
+        [string]$SQLLogDriveLetter = (Get-DriveLetter -DriveLuns $SQLLogLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLLog"),
 
         [Int]$RetryCount = 20,
         [Int]$RetryIntervalSec = 30
