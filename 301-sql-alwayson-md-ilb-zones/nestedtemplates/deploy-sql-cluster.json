@@ -312,9 +312,9 @@
                         "SQLUNCPath": "[parameters('SQLUNCPath')]",
                         "databaseEnginePort": "[variables('agListenerPort')]",
                         "probePortNumber": "[variables('agProbePort')]",
-                        "SQLDataLun": "[reference(resourceId('Microsoft.Resources/deployments', concat(variables('vmNamePrefix'), copyIndex(1), '-newVM'))).output.SQLDataDiskArray.lun.value]",
-                        "SQLLogLun": "[reference(resourceId('Microsoft.Resources/deployments', concat(variables('vmNamePrefix'), copyIndex(1), '-newVM'))).output.SQLLogDiskArray.lun.value]",
-                        "SQLTempdbLun": "[reference(resourceId('Microsoft.Resources/deployments', concat(variables('vmNamePrefix'), copyIndex(1), '-newVM'))).output.SQLTempdbDiskArray.lun.value]"
+                        "SQLDataLun": "[reference(resourceId('Microsoft.Resources/deployments', concat(variables('vmNamePrefix'), copyIndex(1), '-newVM'))).outputs.SQLDataDiskArray.lun.value]",
+                        "SQLLogLun": "[reference(resourceId('Microsoft.Resources/deployments', concat(variables('vmNamePrefix'), copyIndex(1), '-newVM'))).outputs.SQLLogDiskArray.lun.value]",
+                        "SQLTempdbLun": "[reference(resourceId('Microsoft.Resources/deployments', concat(variables('vmNamePrefix'), copyIndex(1), '-newVM'))).outputs.SQLTempdbDiskArray.lun.value]"
                     }
                 },
                 "protectedSettings": {
