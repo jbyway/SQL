@@ -251,6 +251,22 @@
         "vmName": {
             "type": "string",
             "value": "[parameters('vmName')]"
+        },
+        "SQLDiskAttach": {
+            "type": "array",
+            "value": "[variables('SQLDiskAttach')]"
+        }, 
+        "SQLDataDiskArray": {
+            "type": "array",
+            "value": "[variables('SQLDataDiskArray')]"
+        },
+        "SQLLogDiskArray": {
+            "type": "array",
+            "value": "[variables('SQLLogDiskArray')]"
+        },
+        "SQLTempdbDiskArray": {
+            "type": "array",
+            "value": "[variables('SQLTempDBDiskArray')]"
         }
     }
 }
