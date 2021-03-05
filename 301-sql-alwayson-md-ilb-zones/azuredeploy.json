@@ -109,7 +109,7 @@
     "sqlServiceAccount": {
       "type": "string",
       "metadata": {
-        "description": "UPN of the user account to be used for the SQL Server service account. Do not use the same account specified in adminUsername parameter"
+        "description": "User account to be used for the SQL Server service account. Do not use the same account specified in adminUsername parameter"
       }
     },
     "sqlServicePassword": {
@@ -143,7 +143,7 @@
       "metadata": {
         "description": "UNC Path of existing SQL 2019 extracted Installation Files"
       },
-      "defaultValue": "\\\\dc1\\shared\\sql2019ent\\"
+      "defaultValue": "\\\\dc1\\shared\\sql2019ent"
     },
     "_artifactsLocation": {
       "type": "string",
