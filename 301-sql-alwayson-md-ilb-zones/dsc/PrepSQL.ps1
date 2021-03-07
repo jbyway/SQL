@@ -285,7 +285,7 @@ function WaitForSqlSetup {
 function Get-DriveLetter {
     [OutputType([array])]
     param(
-        [array]$DriveLuns,
+        [UInt32]$DriveLuns,
         [string]$DiskNamePrefix,
         [UInt32]$DiskAllocationSize
     )
