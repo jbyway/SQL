@@ -289,7 +289,7 @@ function Get-DriveLetter {
     )
     
     #Find the next disk letter
-    $AvailableDiskLetters = ls function:[e-z]: -n | ? { !(test-path $_) } 
+    $AvailableDiskLetters = ls function:[f-z]: -n | ? { !(test-path $_) } 
     $NextDriveLetter = $AvailableDiskLetters.Substring(0, 1).ForEach( { "$PSItem" })
 
     #Initialise any unnattached disks that are not yet formatted
