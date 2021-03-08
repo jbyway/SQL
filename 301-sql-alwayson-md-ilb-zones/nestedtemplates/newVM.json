@@ -251,36 +251,6 @@
         "vmName": {
             "type": "string",
             "value": "[parameters('vmName')]"
-        },
-        "SQLDataDiskArray": {
-            "type": "array",
-            "copy": {
-                "count": "[variables('SQLDataDiskArray')]",
-                "input": {
-                    "name": "[reference(concat(copyIndex(), variables('SQLDataDiskArray'))).name]",
-                    "lun": "[reference(concat(copyIndex(), variables('SQLDataDiskArray'))).lun]"
-                }
-            }
-        },
-        "SQLLogDiskArray": {
-            "type": "array",
-            "copy": {
-                "count": "[variables('SQLLogDiskArray')]",
-                "input": {
-                    "name": "[reference(concat(copyIndex(), variables('SQLLogDiskArray'))).name]",
-                    "lun": "[reference(concat(copyIndex(), variables('SQLLogDiskArray'))).lun]"
-                }
-            }
-        },
-        "SQLTempdbDiskArray": {
-            "type": "array",
-            "copy": {
-                "count": "[variables('SQLTempDBDiskArray')]",
-                "input": {
-                    "name": "[reference(concat(copyIndex(), variables('SQLTempDBDiskArray'))).name]",
-                    "lun": "[reference(concat(copyIndex(), variables('SQLTempDBDiskArray'))).lun]"
-                }
-            }
         }
     }
 }
