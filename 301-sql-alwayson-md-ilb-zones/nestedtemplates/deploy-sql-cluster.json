@@ -137,7 +137,7 @@
                 "name": "SQLLogDiskLun",
                 "count": "[parameters('SQLLogDiskCount')]",
                 "input": {
-                    "lun": "[add(copyIndex('SQLLogDisksLun', 1), parameters('SQLDataDiskCount'))]"
+                    "lun": "[add(copyIndex('SQLLogDiskLun', 1), parameters('SQLDataDiskCount'))]"
                 }
             },
             {
