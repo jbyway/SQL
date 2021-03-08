@@ -46,10 +46,9 @@ configuration PrepSQL
 
         [String]$DomainNetbiosName = (Get-NetBIOSName -DomainName $DomainName),
 
-        [uint32]$DiskAllocationSize = 65536,
-        [string]$SQLTempdbDriveLetter = (Get-DriveLetter -DriveLuns $SQLTempdbLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLTempdb"),
-        [string]$SQLDataDriveLetter = (Get-DriveLetter -DriveLuns $SQLDataLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLData"),
-        [string]$SQLLogDriveLetter = (Get-DriveLetter -DriveLuns $SQLLogLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLLog"),
+       # [string]$SQLTempdbDriveLetter,
+       # [string]$SQLDataDriveLetter,
+       # [string]$SQLLogDriveLetter,
 
         [Int]$RetryCount = 20,
         [Int]$RetryIntervalSec = 30
@@ -63,9 +62,14 @@ configuration PrepSQL
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 
 
+    $DiskAllocationSize = 65536
     $SQLInstance = "SQL001"
     $SqlCollation = "Latin1_General_CI_AS"
     $RebootVirtualMachine = $false
+
+    Get-DriveLetter -DriveLuns $SQLTempdbLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLTempdb"
+    Get-DriveLetter -DriveLuns $SQLDataLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLData"
+    Get-DriveLetter -DriveLuns $SQLLogLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLLog"
 
     if ($DomainName) {
         $RebootVirtualMachine = $true
@@ -154,12 +158,12 @@ configuration PrepSQL
             InstallSharedDir      = 'C:\Program Files\Microsoft SQL Server'
             InstallSharedWOWDir   = 'C:\Program Files (x86)\Microsoft SQL Server'
             InstanceDir           = 'C:\Program Files\Microsoft SQL Server'
-            InstallSQLDataDir     = $SQLDataDriveLetter + ':\' + $SqlInstance + '_Data'
-            SQLUserDBDir          = $SQLDataDriveLetter + ':\' + $SqlInstance + '_Data'
-            SQLUserDBLogDir       = $SQLLogDriveLetter + ':\' + $SqlInstance + '_Log'
-            SQLTempDBDir          = $SQLTempdbDriveLetter + ':\' + $SqlInstance + '_Tempdb_Data'
-            SQLTempDBLogDir       = $SQLTempdbDriveLetter + ':\' + $SqlInstance + '_Tempdb_Log'
-            SQLBackupDir          = $SQLDataDriveLetter + ':\' + $SqlInstance + '_Backup'
+            InstallSQLDataDir     = $SQLDataPath + ':\' + $SqlInstance + '_Data'
+            SQLUserDBDir          = $SQLDataPath + ':\' + $SqlInstance + '_Data'
+            SQLUserDBLogDir       = $SQLLogPath + ':\' + $SqlInstance + '_Log'
+            SQLTempDBDir          = $SQLTempdbPath + ':\' + $SqlInstance + '_Tempdb_Data'
+            SQLTempDBLogDir       = $SQLTempdbPath + ':\' + $SqlInstance + '_Tempdb_Log'
+            SQLBackupDir          = $SQLDataPath + ':\' + $SqlInstance + '_Backup'
             #ASConfigDir           = 'C:\MSOLAP13.INST2016\Config'
             #ASDataDir             = 'C:\MSOLAP13.INST2016\Data'
             #ASLogDir              = 'C:\MSOLAP13.INST2016\Log'
@@ -171,7 +175,7 @@ configuration PrepSQL
             ForceReboot           = $false
             BrowserSvcStartupType = 'Automatic'
 
-            PsDscRunAsCredential  = $SQLCreds
+            PsDscRunAsCredential  = $AdminCreds
 
             #DependsOn             = '[WindowsFeature]NetFramework35', '[WindowsFeature]NetFramework45'
         }
