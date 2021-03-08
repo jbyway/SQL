@@ -142,7 +142,7 @@
             },
             {
                 "name": "SQLTempDBDiskLun",
-                "count": "1",
+                "count": 1,
                 "input": {
                     "lun": 0
                 }
