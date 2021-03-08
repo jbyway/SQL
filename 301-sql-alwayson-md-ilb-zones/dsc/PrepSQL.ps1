@@ -67,11 +67,11 @@ configuration PrepSQL
     $SqlCollation = "Latin1_General_CI_AS"
     $RebootVirtualMachine = $false
 
-    $SQLTempDBPath =  (Get-DriveLetter -DriveLuns $SQLTempdbLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLTempdb")
+    Get-DriveLetter -DriveLuns $SQLTempdbLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLTempdb"
     
-    $SQLDataPath =  (Get-DriveLetter -DriveLuns $SQLDataLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLData")
+    Get-DriveLetter -DriveLuns $SQLDataLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLData"
     
-    $SQLLogPath = (Get-DriveLetter -DriveLuns $SQLLogLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLLog")
+    Get-DriveLetter -DriveLuns $SQLLogLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLLog"
     
 
     if ($DomainName) {
@@ -309,7 +309,18 @@ function Get-DriveLetter {
 
         New-Partition -DriveLetter $NextDriveLetter[0] -UseMaximumSize | Format-Volume -FileSystem NTFS -AllocationUnitSize $DiskAllocationSize -NewFileSystemLabel ($DiskNamePrefix + "_Disk") -Confirm:$false
         Start-Sleep -Seconds 10
-        return $NextDriveLetter[0]
+        if ($DiskNamePrefix -eq 'SQLTempDB') {
+            $SQLTempdbPath = $NextDriveLetter[0]
+            return $SQLTempdbPath
+        }
+        elseif ($DiskNamePrefix -eq 'SQLData') {
+            $SQLDataPath = $NextDriveLetter[0]
+            return $SQLDataPath
+        }
+        elseif ($DiskNamePrefix -eq 'SQLLog') {
+            $SQLLogPath = $NextDriveLetter[0]
+            return $SQLLogPath
+        }
     }
     elseif ($DriveLuns.Length -ige 2) {
         #Create Striped Volume
@@ -318,7 +329,19 @@ function Get-DriveLetter {
         New-StoragePool -FriendlyName ($DiskNamePrefix + "_SPool") -StorageSubSystemFriendlyName "Windows Storage*" -PhysicalDisks $PhysicalDisks
         New-VirtualDisk -StoragePoolFriendlyName ($DiskNamePrefix + "_SPool") -FriendlyName ($DiskNamePrefix + "_Striped") -ResiliencySettingName Simple -UseMaximumSize -ProvisioningType Fixed -Interleave $DiskAllocationSize -AutoNumberOfColumns | get-disk | Initialize-Disk -passthru | New-Partition -DriveLetter $NextDriveLetter[0] -UseMaximumSize | Format-Volume -AllocationUnitSize $DiskAllocationSize -FileSystem NTFS -NewFileSystemLabel ($DiskNamePrefix + "_StripedDisk")
         Start-Sleep -Seconds 10
-        return $NextDriveLetter[0]
+        
+        if ($DiskNamePrefix -eq 'SQLTempDB') {
+            $SQLTempdbPath = $NextDriveLetter[0]
+            return $SQLTempdbPath
+        }
+        elseif ($DiskNamePrefix -eq 'SQLData') {
+            $SQLDataPath = $NextDriveLetter[0]
+            return $SQLDataPath
+        }
+        elseif ($DiskNamePrefix -eq 'SQLLog') {
+            $SQLLogPath = $NextDriveLetter[0]
+            return $SQLLogPath
+        }
     }
     else {
         return "No Data Drives Found"
