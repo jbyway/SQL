@@ -47,26 +47,23 @@ configuration PrepSQL
         [String]$DomainNetbiosName = (Get-NetBIOSName -DomainName $DomainName),
 
         [uint32]$DiskAllocationSize = 65536,
-        [string]$SQLTempdbDriveLetter = (Get-DriveLetter -DriveLuns $SQLTempdbLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLTempdb"),
-        [string]$SQLDataDriveLetter = (Get-DriveLetter -DriveLuns $SQLDataLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLData"),
-        [string]$SQLLogDriveLetter = (Get-DriveLetter -DriveLuns $SQLLogLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLLog"),
+       # [string]$SQLTempdbDriveLetter = (Get-DriveLetter -DriveLuns $SQLTempdbLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLTempdb"),
+       # [string]$SQLDataDriveLetter = (Get-DriveLetter -DriveLuns $SQLDataLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLData"),
+       # [string]$SQLLogDriveLetter = (Get-DriveLetter -DriveLuns $SQLLogLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLLog"),
 
         [Int]$RetryCount = 20,
         [Int]$RetryIntervalSec = 30
     )
 
-    #Variable Definition
-
     
-    $SQLInstance = "SQL001"
-    $SqlCollation = "Latin1_General_CI_AS"
-
     Import-DscResource -ModuleName xComputerManagement, CDisk, xActiveDirectory, xDisk, SqlServerDsc, xNetworking, xSql
     [System.Management.Automation.PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($Admincreds.UserName)", $Admincreds.Password)
     [System.Management.Automation.PSCredential]$DomainFQDNCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
     [System.Management.Automation.PSCredential]$SQLCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($SQLServicecreds.UserName)", $SQLServicecreds.Password)
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 
+    $SQLInstance = "SQL001"
+    $SqlCollation = "Latin1_General_CI_AS"
     $RebootVirtualMachine = $false
 
     if ($DomainName) {
@@ -283,7 +280,7 @@ function WaitForSqlSetup {
 }
 
 function Get-DriveLetter {
-    [OutputType([array])]
+    [OutputType([string])]
     param(
         [UInt32]$DriveLuns,
         [string]$DiskNamePrefix,
