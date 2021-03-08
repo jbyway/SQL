@@ -46,9 +46,9 @@ configuration PrepSQL
 
         [String]$DomainNetbiosName = (Get-NetBIOSName -DomainName $DomainName),
 
-       # [string]$SQLTempdbDriveLetter,
-       # [string]$SQLDataDriveLetter,
-       # [string]$SQLLogDriveLetter,
+        # [string]$SQLTempdbDriveLetter,
+        # [string]$SQLDataDriveLetter,
+        # [string]$SQLLogDriveLetter,
 
         [Int]$RetryCount = 20,
         [Int]$RetryIntervalSec = 30
@@ -91,8 +91,9 @@ configuration PrepSQL
         }
 
         WindowsFeature FC {
-            Name   = "Failover-Clustering"
-            Ensure = "Present"
+            Name      = "Failover-Clustering"
+            Ensure    = "Present"
+            DependsOn = '[File]InstallationFolder'
         }
 
         WindowsFeature FailoverClusterTools { 
@@ -102,8 +103,9 @@ configuration PrepSQL
         } 
 
         WindowsFeature FCPS {
-            Name   = "RSAT-Clustering-PowerShell"
-            Ensure = "Present"
+            Name      = "RSAT-Clustering-PowerShell"
+            Ensure    = "Present"
+            DependsOn = '[WindowsFeature]FailoverClusterTools'
         }
 
         WindowsFeature ADPS {
@@ -177,7 +179,7 @@ configuration PrepSQL
 
             PsDscRunAsCredential  = $AdminCreds
 
-            #DependsOn             = '[WindowsFeature]NetFramework35', '[WindowsFeature]NetFramework45'
+            DependsOn             = '[File]InstallationFolder'
         }
 
         xSqlLogin AddDomainAdminAccountToSysadminServerRole

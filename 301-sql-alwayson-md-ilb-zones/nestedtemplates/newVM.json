@@ -254,15 +254,30 @@
         }, 
         "SQLDataDiskArray": {
             "type": "array",
-            "value": "[variables('SQLDataDiskArray')]"
+            "copy": {
+                "count": "[variables('SQLDataDiskArray')]",
+                 "input": {
+                    "lun": "[reference(concat(copyIndex(), variables('SQLDataDiskArray'))).lun]"
+                 }
+                }
         },
         "SQLLogDiskArray": {
             "type": "array",
-            "value": "[variables('SQLLogDiskArray')]"
+            "copy": {
+                "count": "[variables('SQLLogDiskArray')]",
+                 "input": {
+                    "lun": "[reference(concat(copyIndex(), variables('SQLLogDiskArray'))).lun]"
+                 }
+                }
         },
         "SQLTempdbDiskArray": {
             "type": "array",
-            "value": "[variables('SQLTempDBDiskArray')]"
+            "copy": {
+                "count": "[variables('SQLTempDBDiskArray')]",
+                 "input": {
+                    "lun": "[reference(concat(copyIndex(), variables('SQLLogDiskArray'))).lun]"
+                 }
+                }
         }
     }
 }
