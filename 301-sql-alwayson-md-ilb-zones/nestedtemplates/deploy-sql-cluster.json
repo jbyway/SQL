@@ -124,7 +124,30 @@
         "agListenerPort": 1433,
         "agProbePort": 59999,
         "agListenerIPAddress": "10.0.11.101",
-        "zones": [ "1", "2", "3" ]
+        "zones": [ "1", "2", "3" ],
+        "copy": [
+            {
+                "name": "SQLDataDiskLun",
+                "count": "[parameters('SQLDataDiskCount')]",
+                "input": {
+                    "lun": "[add(copyIndex('SQLDataDiskCount'),1)]"
+                }
+            },
+            {
+                "name": "SQLLogDiskLun",
+                "count": "[parameters('SQLLogDiskCount')]",
+                "input": {
+                    "lun": "[add(copyIndex('SQLLogDisksCount', 1), parameters('SQLDataDiskCount'))]"
+                }
+            },
+            {
+                "name": "SQLTempDBDiskLun",
+                "count": "1",
+                "input": {
+                    "lun": 0
+                }
+            }
+        ]
     },
     "resources": [
         {
@@ -312,9 +335,9 @@
                         "SQLUNCPath": "[parameters('SQLUNCPath')]",
                         "databaseEnginePort": "[variables('agListenerPort')]",
                         "probePortNumber": "[variables('agProbePort')]",
-                        "SQLDataLun": "[reference(resourceId('Microsoft.Resources/deployments', concat(variables('vmNamePrefix'), copyIndex(1), '-newVM'))).outputs.SQLDataDiskArray]",
-                        "SQLLogLun": "[reference(resourceId('Microsoft.Resources/deployments', concat(variables('vmNamePrefix'), copyIndex(1), '-newVM'))).outputs.SQLLogDiskArray]",
-                        "SQLTempdbLun": "[reference(resourceId('Microsoft.Resources/deployments', concat(variables('vmNamePrefix'), copyIndex(1), '-newVM'))).outputs.SQLTempdbDiskArray]"
+                        "SQLDataLun": "[variables('SQLDataDiskLun')]",
+                        "SQLLogLun": "[variables('SQLLogDiskLun')]",
+                        "SQLTempdbLun": "[variables('SQLTempDBDiskLun')]"
                     }
                 },
                 "protectedSettings": {
