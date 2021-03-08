@@ -47,9 +47,9 @@ configuration PrepSQL
         [String]$DomainNetbiosName = (Get-NetBIOSName -DomainName $DomainName),
 
         [uint32]$DiskAllocationSize = 65536,
-       # [string]$SQLTempdbDriveLetter = (Get-DriveLetter -DriveLuns $SQLTempdbLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLTempdb"),
-       # [string]$SQLDataDriveLetter = (Get-DriveLetter -DriveLuns $SQLDataLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLData"),
-       # [string]$SQLLogDriveLetter = (Get-DriveLetter -DriveLuns $SQLLogLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLLog"),
+        [string]$SQLTempdbDriveLetter = (Get-DriveLetter -DriveLuns $SQLTempdbLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLTempdb"),
+        [string]$SQLDataDriveLetter = (Get-DriveLetter -DriveLuns $SQLDataLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLData"),
+        [string]$SQLLogDriveLetter = (Get-DriveLetter -DriveLuns $SQLLogLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLLog"),
 
         [Int]$RetryCount = 20,
         [Int]$RetryIntervalSec = 30
@@ -61,6 +61,7 @@ configuration PrepSQL
     [System.Management.Automation.PSCredential]$DomainFQDNCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
     [System.Management.Automation.PSCredential]$SQLCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($SQLServicecreds.UserName)", $SQLServicecreds.Password)
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+
 
     $SQLInstance = "SQL001"
     $SqlCollation = "Latin1_General_CI_AS"
@@ -282,7 +283,7 @@ function WaitForSqlSetup {
 function Get-DriveLetter {
     [OutputType([string])]
     param(
-        [UInt32]$DriveLuns,
+        [array]$DriveLuns,
         [string]$DiskNamePrefix,
         [UInt32]$DiskAllocationSize
     )
@@ -292,7 +293,7 @@ function Get-DriveLetter {
     $NextDriveLetter = $AvailableDiskLetters.Substring(0, 1).ForEach( { "$PSItem" })
 
     #Initialise any unnattached disks that are not yet formatted
-    $disks = Get-Disk | where partitionstyle -eq 'raw' | sort number | Initialize-Disk -PartitionStyle GPT -PassThru 
+    Get-Disk | where partitionstyle -eq 'raw' | sort number | Initialize-Disk -PartitionStyle GPT -PassThru 
 
     if ($DriveLuns.Length -eq 1) {
         #Create Normal Volume for 1 drive
@@ -300,15 +301,13 @@ function Get-DriveLetter {
         New-Partition -DriveLetter $NextDriveLetter[0] -UseMaximumSize | Format-Volume -FileSystem NTFS -AllocationUnitSize $DiskAllocationSize -NewFileSystemLabel ($DiskNamePrefix + "_Disk") -Confirm:$false
         return $NextDriveLetter[0]
     }
-    else {
-        if ($DriveLuns.Length -ige 2) {
-            #Create Striped Volume
-            $PhysicalDisks = $DriveLuns.ForEach( { Get-PhysicalDisk -CanPool $true | where PhysicalLocation -match ("Lun " + $PSItem) })
+    elseif ($DriveLuns.Length -ige 2) {
+        #Create Striped Volume
+        $PhysicalDisks = $DriveLuns.ForEach( { Get-PhysicalDisk -CanPool $true | where PhysicalLocation -match ("Lun " + $PSItem) })
         
-            New-StoragePool -FriendlyName ($DiskNamePrefix + "_SPool") -StorageSubSystemFriendlyName "Windows Storage*" -PhysicalDisks $PhysicalDisks
-            New-VirtualDisk -StoragePoolFriendlyName ($DiskNamePrefix + "_SPool") -FriendlyName ($DiskNamePrefix + "_Striped") -ResiliencySettingName Simple -UseMaximumSize -ProvisioningType Fixed -Interleave $DiskAllocationSize -AutoNumberOfColumns | get-disk | Initialize-Disk -passthru | New-Partition -DriveLetter $NextDriveLetter[0] -UseMaximumSize | Format-Volume -AllocationUnitSize $DiskAllocationSize -FileSystem NTFS -NewFileSystemLabel ($DiskNamePrefix + "_StripedDisk")
-            return $NextDriveLetter[0]
-        }
+        New-StoragePool -FriendlyName ($DiskNamePrefix + "_SPool") -StorageSubSystemFriendlyName "Windows Storage*" -PhysicalDisks $PhysicalDisks
+        New-VirtualDisk -StoragePoolFriendlyName ($DiskNamePrefix + "_SPool") -FriendlyName ($DiskNamePrefix + "_Striped") -ResiliencySettingName Simple -UseMaximumSize -ProvisioningType Fixed -Interleave $DiskAllocationSize -AutoNumberOfColumns | get-disk | Initialize-Disk -passthru | New-Partition -DriveLetter $NextDriveLetter[0] -UseMaximumSize | Format-Volume -AllocationUnitSize $DiskAllocationSize -FileSystem NTFS -NewFileSystemLabel ($DiskNamePrefix + "_StripedDisk")
+        return $NextDriveLetter[0]
     }
     else {
         return "No Data Drives Found"
