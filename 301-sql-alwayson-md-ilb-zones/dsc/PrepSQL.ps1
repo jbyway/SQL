@@ -67,12 +67,12 @@ configuration PrepSQL
     $SqlCollation = "Latin1_General_CI_AS"
     $RebootVirtualMachine = $false
 
-    $SQLTempDBPath =  Get-DriveLetter -DriveLuns $SQLTempdbLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLTempdb"
-    Start-Sleep -Seconds 10
-    $SQLDataPath =  Get-DriveLetter -DriveLuns $SQLDataLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLData"
-    Start-Sleep -Seconds 10
-    $SQLLogPath = Get-DriveLetter -DriveLuns $SQLLogLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLLog"
-    Start-Sleep -Seconds 10
+    $SQLTempDBPath =  (Get-DriveLetter -DriveLuns $SQLTempdbLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLTempdb")
+    
+    $SQLDataPath =  (Get-DriveLetter -DriveLuns $SQLDataLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLData")
+    
+    $SQLLogPath = (Get-DriveLetter -DriveLuns $SQLLogLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLLog")
+    
 
     if ($DomainName) {
         $RebootVirtualMachine = $true
