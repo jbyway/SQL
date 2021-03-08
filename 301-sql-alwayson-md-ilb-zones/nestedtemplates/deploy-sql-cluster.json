@@ -337,7 +337,7 @@
                         "probePortNumber": "[variables('agProbePort')]",
                         "SQLDataLun": "[variables('SQLDataDiskLun')]",
                         "SQLLogLun": "[variables('SQLLogDiskLun')]",
-                        "SQLTempdbLun": "[variables('SQLTempDBDiskLun')]"
+                        "SQLTempdbLun": 1
                     }
                 },
                 "protectedSettings": {
