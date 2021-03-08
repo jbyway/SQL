@@ -273,7 +273,7 @@
                 }
         },
         "SQLTempdbDiskArray": {
-            "type": "int",
+            "type": "array",
             "copy": {
                 "count": "[variables('SQLTempDBDiskArray')]",
                  "input": {
