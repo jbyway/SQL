@@ -306,20 +306,20 @@ function Get-DriveLetter {
 
     if ($DriveLuns.Length -eq 1) {
         #Create Normal Volume for 1 drive
-
-        New-Partition -DriveLetter $NextDriveLetter[0] -UseMaximumSize | Format-Volume -FileSystem NTFS -AllocationUnitSize $DiskAllocationSize -NewFileSystemLabel ($DiskNamePrefix + "_Disk") -Confirm:$false
+        $PhysicalDisks = Get-PhysicalDisk | where PhysicalLocation -match ("Lun " + $DriveLuns.lun)
+        New-Partition -DriveLetter $NextDriveLetter[0] -UseMaximumSize -DiskId $PhysicalDisks.UniqueId | Format-Volume -FileSystem NTFS -AllocationUnitSize $DiskAllocationSize -NewFileSystemLabel ($DiskNamePrefix + "_Disk") -Confirm:$false
         Start-Sleep -Seconds 10
         if ($DiskNamePrefix -eq 'SQLTempDB') {
             $SQLTempdbPath = $NextDriveLetter[0]
-            return $SQLTempdbPath
+            #return $SQLTempdbPath
         }
         elseif ($DiskNamePrefix -eq 'SQLData') {
             $SQLDataPath = $NextDriveLetter[0]
-            return $SQLDataPath
+            #return $SQLDataPath
         }
         elseif ($DiskNamePrefix -eq 'SQLLog') {
             $SQLLogPath = $NextDriveLetter[0]
-            return $SQLLogPath
+            #return $SQLLogPath
         }
     }
     elseif ($DriveLuns.Length -ige 2) {
@@ -332,15 +332,15 @@ function Get-DriveLetter {
         
         if ($DiskNamePrefix -eq 'SQLTempDB') {
             $SQLTempdbPath = $NextDriveLetter[0]
-            return $SQLTempdbPath
+            #return $SQLTempdbPath
         }
         elseif ($DiskNamePrefix -eq 'SQLData') {
             $SQLDataPath = $NextDriveLetter[0]
-            return $SQLDataPath
+            #return $SQLDataPath
         }
         elseif ($DiskNamePrefix -eq 'SQLLog') {
             $SQLLogPath = $NextDriveLetter[0]
-            return $SQLLogPath
+            #return $SQLLogPath
         }
     }
     else {
