@@ -67,9 +67,12 @@ configuration PrepSQL
     $SqlCollation = "Latin1_General_CI_AS"
     $RebootVirtualMachine = $false
 
-    Get-DriveLetter -DriveLuns $SQLTempdbLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLTempdb"
-    Get-DriveLetter -DriveLuns $SQLDataLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLData"
-    Get-DriveLetter -DriveLuns $SQLLogLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLLog"
+    $SQLTempDBPath =  Get-DriveLetter -DriveLuns $SQLTempdbLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLTempdb"
+    Start-Sleep -Seconds 10
+    $SQLDataPath =  Get-DriveLetter -DriveLuns $SQLDataLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLData"
+    Start-Sleep -Seconds 10
+    $SQLLogPath = Get-DriveLetter -DriveLuns $SQLLogLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLLog"
+    Start-Sleep -Seconds 10
 
     if ($DomainName) {
         $RebootVirtualMachine = $true
@@ -155,16 +158,16 @@ configuration PrepSQL
             SQLSvcAccount         = $SQLServiceCreds
             AgtSvcAccount         = $SqlAgentServiceCredential
             ASSvcAccount          = $SqlServiceCredential
-            SQLSysAdminAccounts   = $SQLCreds.UserName
+            SQLSysAdminAccounts   = $SQLCreds.UserName, $AdminCreds.UserName
             #ASSysAdminAccounts    = 'COMPANY\SQL Administrators', $SqlAdministratorCredential.UserName
             InstallSharedDir      = 'C:\Program Files\Microsoft SQL Server'
             InstallSharedWOWDir   = 'C:\Program Files (x86)\Microsoft SQL Server'
             InstanceDir           = 'C:\Program Files\Microsoft SQL Server'
             InstallSQLDataDir     = $SQLDataPath + ':\' + $SqlInstance + '_Data'
             SQLUserDBDir          = $SQLDataPath + ':\' + $SqlInstance + '_Data'
-            SQLUserDBLogDir       = $SQLLogPath + ':\' + $SqlInstance + '_Log'
+            SQLUserDBLogDir       = $SQLLogPath + ':\' + $SqlInstance + '_Logs'
             SQLTempDBDir          = $SQLTempdbPath + ':\' + $SqlInstance + '_Tempdb_Data'
-            SQLTempDBLogDir       = $SQLTempdbPath + ':\' + $SqlInstance + '_Tempdb_Log'
+            SQLTempDBLogDir       = $SQLTempdbPath + ':\' + $SqlInstance + '_Tempdb_Logs'
             SQLBackupDir          = $SQLDataPath + ':\' + $SqlInstance + '_Backup'
             #ASConfigDir           = 'C:\MSOLAP13.INST2016\Config'
             #ASDataDir             = 'C:\MSOLAP13.INST2016\Data'
@@ -305,6 +308,7 @@ function Get-DriveLetter {
         #Create Normal Volume for 1 drive
 
         New-Partition -DriveLetter $NextDriveLetter[0] -UseMaximumSize | Format-Volume -FileSystem NTFS -AllocationUnitSize $DiskAllocationSize -NewFileSystemLabel ($DiskNamePrefix + "_Disk") -Confirm:$false
+        Start-Sleep -Seconds 10
         return $NextDriveLetter[0]
     }
     elseif ($DriveLuns.Length -ige 2) {
@@ -313,6 +317,7 @@ function Get-DriveLetter {
         
         New-StoragePool -FriendlyName ($DiskNamePrefix + "_SPool") -StorageSubSystemFriendlyName "Windows Storage*" -PhysicalDisks $PhysicalDisks
         New-VirtualDisk -StoragePoolFriendlyName ($DiskNamePrefix + "_SPool") -FriendlyName ($DiskNamePrefix + "_Striped") -ResiliencySettingName Simple -UseMaximumSize -ProvisioningType Fixed -Interleave $DiskAllocationSize -AutoNumberOfColumns | get-disk | Initialize-Disk -passthru | New-Partition -DriveLetter $NextDriveLetter[0] -UseMaximumSize | Format-Volume -AllocationUnitSize $DiskAllocationSize -FileSystem NTFS -NewFileSystemLabel ($DiskNamePrefix + "_StripedDisk")
+        Start-Sleep -Seconds 10
         return $NextDriveLetter[0]
     }
     else {
