@@ -93,6 +93,10 @@
         "SQLTempDBDiskSize": {
             "type": "int"
         },
+        "SQLTempDBDiskCount": {
+            "type": "int",
+            "defaultValue": 1
+        },
         "workloadType": {
             "type": "string",
             "defaultValue": "GENERAL"
@@ -127,24 +131,24 @@
         "zones": [ "1", "2", "3" ],
         "copy": [
             {
+                "name": "SQLTempDBDiskLun",
+                "count": "[parameters('SQLTempDBDiskCount')]",
+                "input": {
+                    "lun": "[copyIndex('SQLTempDBDiskLun')]"
+                }
+            },
+            {
                 "name": "SQLDataDiskLun",
                 "count": "[parameters('SQLDataDiskCount')]",
                 "input": {
-                    "lun": "[add(copyIndex('SQLDataDiskLun'),1)]"
+                    "lun": "[add(copyIndex('SQLDataDiskLun'), parameters('SQLTempDBDiskCount'))]"
                 }
             },
             {
                 "name": "SQLLogDiskLun",
                 "count": "[parameters('SQLLogDiskCount')]",
                 "input": {
-                    "lun": "[add(copyIndex('SQLLogDiskLun', 1), parameters('SQLDataDiskCount'))]"
-                }
-            },
-            {
-                "name": "SQLTempDBDiskLun",
-                "count": 1,
-                "input": {
-                    "lun": 0
+                    "lun": "[add(copyIndex('SQLLogDiskLun', variables('SQLTempDBDiskLun')), parameters('SQLDataDiskCount'))]"
                 }
             }
         ]
@@ -337,7 +341,7 @@
                         "probePortNumber": "[variables('agProbePort')]",
                         "SQLDataLun": "[variables('SQLDataDiskLun')]",
                         "SQLLogLun": "[variables('SQLLogDiskLun')]",
-                        "SQLTempdbLun": 1
+                        "SQLTempdbLun": "[variables('SQLTempDBDiskLun')]"
                     }
                 },
                 "protectedSettings": {
