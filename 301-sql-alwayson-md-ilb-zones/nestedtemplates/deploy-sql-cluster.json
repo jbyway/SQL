@@ -134,7 +134,7 @@
                 "name": "SQLTempDBDiskLun",
                 "count": "[parameters('SQLTempDBDiskCount')]",
                 "input": {
-                    "name": "[concat('SQLTempDbDisk', copyIndex())]",
+                    "name": "[concat('SQLTempDbDisk', copyIndex('SQLTempDBDiskLun'))]",
                     "lun": "[copyIndex('SQLTempDBDiskLun')]"
                 }
             },
@@ -142,7 +142,7 @@
                 "name": "SQLDataDiskLun",
                 "count": "[parameters('SQLDataDiskCount')]",
                 "input": {
-                    "name": "[concat('SQLDataDisk', copyIndex())]",
+                    "name": "[concat('SQLDataDisk', copyIndex('SQLDataDiskLun'))]",
                     "lun": "[add(copyIndex('SQLDataDiskLun'), parameters('SQLTempDBDiskCount'))]"
                 }
             },
@@ -150,7 +150,7 @@
                 "name": "SQLLogDiskLun",
                 "count": "[parameters('SQLLogDiskCount')]",
                 "input": {
-                    "name": "[concat('SQLLogDisk', copyIndex())]",
+                    "name": "[concat('SQLLogDisk', copyIndex('SQLLogDiskLun'))]",
                     "lun": "[add(copyIndex('SQLLogDiskLun', parameters('SQLTempDBDiskCount')), parameters('SQLDataDiskCount'))]"
                 }
             }
@@ -310,7 +310,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(variables('vmNamePrefix'),copyindex(1),'/sqlPrep')]",
+            "name": "[concat(variables('vmNamePrefix'),copyIndex(1),'/sqlPrep')]",
             "apiVersion": "2020-12-01",
             "location": "[parameters('location')]",
             "dependsOn": [
