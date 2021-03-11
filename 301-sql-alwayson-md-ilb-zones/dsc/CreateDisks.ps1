@@ -5,7 +5,7 @@
     )
     
     #Find the next disk letter
-    $AvailableDiskLetters = ls function:[f-z]: -n | ? { !(test-path $_) } 
+    $AvailableDiskLetters = ls function:[g-z]: -n | ? { !(test-path $_) } 
     $NextDriveLetter = $AvailableDiskLetters.Substring(0, 1).ForEach( { "$PSItem" })
 
     #Initialise any unnattached disks that are not yet formatted
@@ -31,7 +31,7 @@
     }
     elseif ($DriveLuns.Length -ige 2) {
         #Create Striped Volume
-        $PhysicalDisks = $DriveLuns.ForEach( { Get-PhysicalDisk -CanPool $true | where PhysicalLocation -match ("Lun " + $PSItem) })
+        $PhysicalDisks = $DriveLuns.luns.ForEach( { Get-PhysicalDisk -CanPool $true | where PhysicalLocation -match ("Lun " + $PSItem) })
         
         New-StoragePool -FriendlyName ($DiskNamePrefix + "_SPool") -StorageSubSystemFriendlyName "Windows Storage*" -PhysicalDisks $PhysicalDisks
         New-VirtualDisk -StoragePoolFriendlyName ($DiskNamePrefix + "_SPool") -FriendlyName ($DiskNamePrefix + "_Striped") -ResiliencySettingName Simple -UseMaximumSize -ProvisioningType Fixed -Interleave $DiskAllocationSize -AutoNumberOfColumns | get-disk | Initialize-Disk -passthru | New-Partition -DriveLetter $NextDriveLetter[0] -UseMaximumSize | Format-Volume -AllocationUnitSize $DiskAllocationSize -FileSystem NTFS -NewFileSystemLabel ($DiskNamePrefix + "_StripedDisk")
