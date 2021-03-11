@@ -90,22 +90,22 @@ configuration PrepSQL
 
         Script CreateTempdbVolume {
             GetScript = { return @{'Result' = ''}}
-            TestScript = return (& "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLTempdbLun.lun -DiskNamePrefix 'SQLTempdb' -DiskAllocationSize $DiskAllocationSize)
-            SetScript = return (& "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLTempdbLun.lun -DiskNamePrefix 'SQLTempdb' -DiskAllocationSize $DiskAllocationSize)
+            TestScript = { & "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLTempdbLun.lun -DiskNamePrefix 'SQLTempdb' -DiskAllocationSize $DiskAllocationSize}
+            SetScript = {return (& "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLTempdbLun.lun -DiskNamePrefix 'SQLTempdb' -DiskAllocationSize $DiskAllocationSize)}
 
         }
         
         Script CreateDataVolume {
             GetScript = { return @{'Result' = ''}}
-            TestScript = return (& "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLDataLun.lun -DiskNamePrefix 'SQLData' -DiskAllocationSize $DiskAllocationSize)
-            SetScript = return (& "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLDataLun.lun -DiskNamePrefix 'SQLData' -DiskAllocationSize $DiskAllocationSize)
+            TestScript = { & "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLDataLun.lun -DiskNamePrefix 'SQLData' -DiskAllocationSize $DiskAllocationSize}
+            SetScript = {return (& "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLDataLun.lun -DiskNamePrefix 'SQLData' -DiskAllocationSize $DiskAllocationSize)}
             DependsOn = '[Script]CreateTempdbVolume'
         }
 
         Script CreateLogVolume {
             GetScript = { return @{'Result' = ''}}
-            TestScript = return (& "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLLogLun.lun -DiskNamePrefix 'SQLLog' -DiskAllocationSize $DiskAllocationSize)
-            SetScript = return (& "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLLogLun.lun -DiskNamePrefix 'SQLLog' -DiskAllocationSize $DiskAllocationSize)
+            TestScript = { & "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLLogLun.lun -DiskNamePrefix 'SQLLog' -DiskAllocationSize $DiskAllocationSize}
+            SetScript = {return (& "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLLogLun.lun -DiskNamePrefix 'SQLLog' -DiskAllocationSize $DiskAllocationSize)}
             DependsOn = '[Script]CreateDataVolume'
         }
 
