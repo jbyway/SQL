@@ -59,7 +59,7 @@ configuration PrepSQL
     )
 
     
-    Import-DscResource -ModuleName xComputerManagement, CDisk, xActiveDirectory, xDisk, SqlServerDsc, xNetworking, xSql, PSDscAllowDomainUser
+    Import-DscResource -ModuleName xComputerManagement, CDisk, xActiveDirectory, xDisk, SqlServerDsc, xNetworking, xSql
     [System.Management.Automation.PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($Admincreds.UserName)", $Admincreds.Password)
     [System.Management.Automation.PSCredential]$DomainFQDNCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
     [System.Management.Automation.PSCredential]$SQLCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($SQLServicecreds.UserName)", $SQLServicecreds.Password)
