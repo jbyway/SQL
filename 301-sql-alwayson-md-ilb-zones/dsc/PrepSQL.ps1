@@ -92,7 +92,7 @@ configuration PrepSQL
     Node localhost
     {
 
-        xSqlCreateVirtualDataDisk TempdbDrive {
+        xSqlCreateVirtualTempdbDisk TempdbDrive {
             NumberOfDisks       = $SQLTempdbLun.Count
             StartingDeviceID    = $SQLTempdbLun[0].lun
             DiskLetter          = $SQLTempdbDriveLetter
@@ -101,14 +101,32 @@ configuration PrepSQL
 
         }
 
-       
+        xSqlCreateVirtualDataDisk DataDrive {
+            NumberOfDisks       = $SQLDataLun.Count
+            StartingDeviceID    = $SQLDataLun[0].lun
+            DiskLetter          = $SQLDataDriveLetter
+            OptimizationType    = $OptimizationType
+            NumberOfColumns     = $NumberOfColumns
+            DependsOn       = '[xSqlCreateVirtualTempdbDisk]TempdbDrive'
+        }
+
+        xSqlCreateVirtualLogDisk LogDrive {
+            NumberOfDisks       = $SQLLogLun.Count
+            StartingDeviceID    = $SQLLogLun[0].lun
+            DiskLetter          = $SQLLogDriveLetter
+            OptimizationType    = $OptimizationType
+            NumberOfColumns     = $NumberOfColumns
+            DependsOn       = '[xSqlCreateVirtualDataDisk]DataDrive'
+        }
+
+
         File InstallationFolder {
             Ensure          = 'Present'
             Type            = 'Directory'
             SourcePath      = $SQLUNCPath
             DestinationPath = $SQLInstallFiles
             Recurse         = $true
-            DependsOn       = '[xSqlCreateVirtualDataDisk]TempdbDrive'
+            DependsOn       = '[xSqlCreateVirtualLogDisk]LogDrive'
         }
 
         WindowsFeature FC {
@@ -138,7 +156,7 @@ configuration PrepSQL
             SetScript  = '[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; Install-PackageProvider -Name NuGet -Force; Install-Module -Name SqlServer -AllowClobber -Force; Import-Module -Name SqlServer -ErrorAction SilentlyContinue'
             TestScript = 'Import-Module -Name SqlServer -ErrorAction SilentlyContinue; if (Get-Module -Name SqlServer) { $True } else { $False }'
             GetScript  = 'Import-Module -Name SqlServer -ErrorAction SilentlyContinue; @{Ensure = if (Get-Module -Name SqlServer) {"Present"} else {"Absent"}}'
-            DependsOn = '[xSqlCreateVirtualDataDisk]TempdbDrive'
+            DependsOn = '[xSqlCreateVirtualLogDisk]LogDrive'
         }
 
         xFirewall DatabaseEngineFirewallRule
