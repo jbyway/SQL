@@ -18,6 +18,8 @@ configuration PrepSQL
 
         [UInt32]$ProbePortNumber = 59999,
 
+        [UInt32]$DiskAllocationSize = 65536,
+
         [Parameter()]
         [UInt32]$NumberOfDisks,
 
@@ -57,14 +59,14 @@ configuration PrepSQL
     )
 
     
-    Import-DscResource -ModuleName xComputerManagement, CDisk, xActiveDirectory, xDisk, SqlServerDsc, xNetworking, xSql
+    Import-DscResource -ModuleName xComputerManagement, CDisk, xActiveDirectory, xDisk, SqlServerDsc, xNetworking, xSql, PSDscAllowDomainUser
     [System.Management.Automation.PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($Admincreds.UserName)", $Admincreds.Password)
     [System.Management.Automation.PSCredential]$DomainFQDNCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
     [System.Management.Automation.PSCredential]$SQLCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($SQLServicecreds.UserName)", $SQLServicecreds.Password)
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 
 
-    $DiskAllocationSize = 65536
+    
     $SQLInstance = "SQL001"
     $SqlCollation = "Latin1_General_CI_AS"
     $RebootVirtualMachine = $false
@@ -105,7 +107,7 @@ configuration PrepSQL
             DiskLetter          = $SQLDataDriveLetter
             OptimizationType    = $OptimizationType
             NumberOfColumns     = $NumberOfColumns
-            DependsOn       = "[xSqlCreateVirtualDataDisk]TempdbDrive"
+            DependsOn       = '[xSqlCreateVirtualDataDisk]TempdbDrive'
         }
 
         xSqlCreateVirtualDataDisk LogDrive {
@@ -114,7 +116,7 @@ configuration PrepSQL
             DiskLetter          = $SQLLogDriveLetter
             OptimizationType    = $OptimizationType
             NumberOfColumns     = $NumberOfColumns
-            DependsOn       = "[xSqlCreateVirtualDataDisk]DataDrive"
+            DependsOn       = '[xSqlCreateVirtualDataDisk]DataDrive'
         }
 
         File InstallationFolder {
@@ -123,7 +125,7 @@ configuration PrepSQL
             SourcePath      = $SQLUNCPath
             DestinationPath = $SQLInstallFiles
             Recurse         = $true
-            DependsOn       = "[xSqlCreateVirtualDataDisk]LogDrive"
+            DependsOn       = '[xSqlCreateVirtualDataDisk]LogDrive'
         }
 
         WindowsFeature FC {
@@ -153,6 +155,7 @@ configuration PrepSQL
             SetScript  = '[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; Install-PackageProvider -Name NuGet -Force; Install-Module -Name SqlServer -AllowClobber -Force; Import-Module -Name SqlServer -ErrorAction SilentlyContinue'
             TestScript = 'Import-Module -Name SqlServer -ErrorAction SilentlyContinue; if (Get-Module -Name SqlServer) { $True } else { $False }'
             GetScript  = 'Import-Module -Name SqlServer -ErrorAction SilentlyContinue; @{Ensure = if (Get-Module -Name SqlServer) {"Present"} else {"Absent"}}'
+            DependsOn = '[xSqlCreateVirtualDataDisk]DataDrive'
         }
 
         xFirewall DatabaseEngineFirewallRule
@@ -215,7 +218,7 @@ configuration PrepSQL
 
             PsDscRunAsCredential  = $AdminCreds
 
-            DependsOn             = '[File]InstallationFolder'
+            DependsOn             = '[Script]SqlServerPowerShell'
         }
 
         xSqlLogin AddDomainAdminAccountToSysadminServerRole
