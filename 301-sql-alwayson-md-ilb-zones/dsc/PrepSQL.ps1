@@ -138,7 +138,7 @@ configuration PrepSQL
             SetScript  = '[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; Install-PackageProvider -Name NuGet -Force; Install-Module -Name SqlServer -AllowClobber -Force; Import-Module -Name SqlServer -ErrorAction SilentlyContinue'
             TestScript = 'Import-Module -Name SqlServer -ErrorAction SilentlyContinue; if (Get-Module -Name SqlServer) { $True } else { $False }'
             GetScript  = 'Import-Module -Name SqlServer -ErrorAction SilentlyContinue; @{Ensure = if (Get-Module -Name SqlServer) {"Present"} else {"Absent"}}'
-            DependsOn = '[xSqlCreateVirtualDataDisk]SQLTempdbDrive'
+            DependsOn = '[xSqlCreateVirtualDataDisk]TempdbDrive'
         }
 
         xFirewall DatabaseEngineFirewallRule
