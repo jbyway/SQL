@@ -46,9 +46,9 @@ configuration PrepSQL
 
         [String]$DomainNetbiosName = (Get-NetBIOSName -DomainName $DomainName),
 
-        [string]$SQLTempdbDriveLetter = "F",
-        [string]$SQLDataDriveLetter = "G",
-        [string]$SQLLogDriveLetter = "H",
+        # [string]$SQLTempdbDriveLetter,
+        # [string]$SQLDataDriveLetter,
+        # [string]$SQLLogDriveLetter,
 
         [Int]$RetryCount = 20,
         [Int]$RetryIntervalSec = 30
@@ -88,31 +88,25 @@ configuration PrepSQL
     Node localhost
     {
 
-        xSqlCreateVirtualDataDisk TempdbDrive {
-            NumberOfDisks       = $SQLTempdbLun.Count
-            StartingDeviceID    = $SQLTempdbLun[0].lun
-            DiskLetter          = $SQLTempdbDriveLetter
-            OptimizationType    = $OptimizationType
-            NumberOfColumns     = $NumberOfColumns
+        Script CreateTempdbVolume {
+            GetScript = { return @{'Result' = ''}}
+            TestScript = { & "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLTempdbLun.lun -DiskNamePrefix 'SQLTempdb' -DiskAllocationSize $DiskAllocationSize}
+            SetScript = {return (& "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLTempdbLun.lun -DiskNamePrefix 'SQLTempdb' -DiskAllocationSize $DiskAllocationSize)}
 
         }
-
-        xSqlCreateVirtualDataDisk DataDrive {
-            NumberOfDisks       = $SQLDataLun.Count
-            StartingDeviceID    = $SQLDataLun[0].lun
-            DiskLetter          = $SQLDataDriveLetter
-            OptimizationType    = $OptimizationType
-            NumberOfColumns     = $NumberOfColumns
-            DependsOn       = "[xSqlCreateVirtualDataDisk]TempdbDrive"
+        
+        Script CreateDataVolume {
+            GetScript = { return @{'Result' = ''}}
+            TestScript = { & "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLDataLun.lun -DiskNamePrefix 'SQLData' -DiskAllocationSize $DiskAllocationSize}
+            SetScript = {return (& "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLDataLun.lun -DiskNamePrefix 'SQLData' -DiskAllocationSize $DiskAllocationSize)}
+            DependsOn = '[Script]CreateTempdbVolume'
         }
 
-        xSqlCreateVirtualDataDisk LogDrive {
-            NumberOfDisks       = $SQLLogLun.Count
-            StartingDeviceID    = $SQLLogLun[0].lun
-            DiskLetter          = $SQLLogDriveLetter
-            OptimizationType    = $OptimizationType
-            NumberOfColumns     = $NumberOfColumns
-            DependsOn       = "[xSqlCreateVirtualDataDisk]LogDrive"
+        Script CreateLogVolume {
+            GetScript = { return @{'Result' = ''}}
+            TestScript = { & "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLLogLun.lun -DiskNamePrefix 'SQLLog' -DiskAllocationSize $DiskAllocationSize}
+            SetScript = {return (& "$ScriptPath\CreateDisks.ps1" -DriveLuns $SQLLogLun.lun -DiskNamePrefix 'SQLLog' -DiskAllocationSize $DiskAllocationSize)}
+            DependsOn = '[Script]CreateDataVolume'
         }
 
         File InstallationFolder {
@@ -121,7 +115,7 @@ configuration PrepSQL
             SourcePath      = $SQLUNCPath
             DestinationPath = $SQLInstallFiles
             Recurse         = $true
-            DependsOn       = "[xSqlCreateVirtualDataDisk]LogDrive"
+            DependsOn = '[Script]CreateLogVolume'
         }
 
         WindowsFeature FC {
