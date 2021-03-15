@@ -41,6 +41,9 @@
         "SQLLogDiskCount": {
             "type": "int"
         },
+        "SQLTempdbDiskCount": {
+            "type": "int"
+        },
         "SQLTempDBDiskSize": {
             "type": "int"
         }
@@ -49,9 +52,9 @@
         "copy": [
             {
                 "name": "SQLTempDBDiskArray",
-                "count": 1,
+                "count": "[parameters('SQLTempdbDiskCount')]",
                 "input": {
-                    "name": "[concat(parameters('vmName'), '_SQLTempDBDisk')]",
+                    "name": "[concat(parameters('vmName'), '_SQLTempDBDisk', copyIndex('SQLTempDBDiskAarray',1))]",
                     "diskSizeGB": "[parameters('SQLTempDBDiskSize')]",
                     "lun": 0,
                     "createOption": "empty",
@@ -66,7 +69,7 @@
                 "input": {
                     "name": "[concat(parameters('vmName'), '_SQLDataDisk', copyIndex('SQLDataDiskArray', 1))]",
                     "diskSizeGB": "[parameters('SQLDataDiskSize')]",
-                    "lun": "[copyIndex('SQLDataDiskArray', 1)]",
+                    "lun": "[copyIndex('SQLDataDiskArray', parameters('SQLTempdbDiskCount'))]",
                     "createOption": "empty",
                     "caching": "ReadOnly",
                     "writeAcceleratorEnabled": false,
@@ -79,7 +82,7 @@
                 "input": {
                     "name": "[concat(parameters('vmName'), '_SQLLogDisk', copyIndex('SQLLogDiskArray', 1))]",
                     "diskSizeGB": "[parameters('SQLLogDiskSize')]",
-                    "lun": "[add(copyIndex('SQLLogDiskArray',1), parameters('SQLDataDiskCount'))]",
+                    "lun": "[add(copyIndex('SQLLogDiskArray',parameters('SQLTempdbDiskCount')), parameters('SQLDataDiskCount'))]",
                     "createOption": "empty",
                     "caching": "None",
                     "writeAcceleratorEnabled": false,

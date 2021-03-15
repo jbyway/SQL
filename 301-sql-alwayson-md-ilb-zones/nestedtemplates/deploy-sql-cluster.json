@@ -284,6 +284,9 @@
                     "SQLLogDiskCount": {
                         "value": "[parameters('SQLLogDiskCount')]"
                     },
+                    "SQLTempdbDiskCount": {
+                        "value": "[parameters('SQLTempdbDiskCount')]"
+                    },
                     "SQLTempDBDiskSize": {
                         "value": "[parameters('SQLTempDBDiskSize')]"
                     },

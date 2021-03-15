@@ -101,24 +101,7 @@ configuration PrepSQL
 
         }
 
-        xSqlCreateVirtualDataDisk DataDrive {
-            NumberOfDisks       = $SQLDataLun.Count
-            StartingDeviceID    = $SQLDataLun[0].lun
-            DiskLetter          = $SQLDataDriveLetter
-            OptimizationType    = $OptimizationType
-            NumberOfColumns     = $NumberOfColumns
-            DependsOn       = '[xSqlCreateVirtualDataDisk]TempdbDrive'
-        }
-
-        xSqlCreateVirtualDataDisk LogDrive {
-            NumberOfDisks       = $SQLLogLun.Count
-            StartingDeviceID    = $SQLLogLun[0].lun
-            DiskLetter          = $SQLLogDriveLetter
-            OptimizationType    = $OptimizationType
-            NumberOfColumns     = $NumberOfColumns
-            DependsOn       = '[xSqlCreateVirtualDataDisk]DataDrive'
-        }
-
+       
         File InstallationFolder {
             Ensure          = 'Present'
             Type            = 'Directory'
