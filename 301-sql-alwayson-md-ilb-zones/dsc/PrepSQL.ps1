@@ -66,7 +66,7 @@ configuration PrepSQL
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 
 
-    
+    [string]$OptimizationType = $WorkloadType
     $SQLInstance = "SQL001"
     $SqlCollation = "Latin1_General_CI_AS"
     $RebootVirtualMachine = $false
