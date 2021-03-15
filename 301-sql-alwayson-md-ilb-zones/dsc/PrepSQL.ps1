@@ -50,6 +50,8 @@ configuration PrepSQL
         [string]$SQLDataDriveLetter = "G",
         [string]$SQLLogDriveLetter = "H",
 
+        [Int]$NumberOfColumns = 2,
+
         [Int]$RetryCount = 20,
         [Int]$RetryIntervalSec = 30
     )
@@ -112,7 +114,7 @@ configuration PrepSQL
             DiskLetter          = $SQLLogDriveLetter
             OptimizationType    = $OptimizationType
             NumberOfColumns     = $NumberOfColumns
-            DependsOn       = "[xSqlCreateVirtualDataDisk]LogDrive"
+            DependsOn       = "[xSqlCreateVirtualDataDisk]DataDrive"
         }
 
         File InstallationFolder {
