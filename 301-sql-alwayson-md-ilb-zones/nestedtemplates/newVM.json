@@ -54,7 +54,7 @@
                 "name": "SQLTempDBDiskArray",
                 "count": "[parameters('SQLTempdbDiskCount')]",
                 "input": {
-                    "name": "[concat(parameters('vmName'), '_SQLTempDBDisk', copyIndex('SQLTempDBDiskAarray',1))]",
+                    "name": "[concat(parameters('vmName'), '_SQLTempDBDisk', copyIndex('SQLTempDBDiskArray',1))]",
                     "diskSizeGB": "[parameters('SQLTempDBDiskSize')]",
                     "lun": 0,
                     "createOption": "empty",
