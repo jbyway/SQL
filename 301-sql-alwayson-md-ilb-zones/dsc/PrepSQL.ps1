@@ -63,12 +63,15 @@ configuration PrepSQL
     [System.Management.Automation.PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($Admincreds.UserName)", $Admincreds.Password)
     [System.Management.Automation.PSCredential]$DomainFQDNCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
     [System.Management.Automation.PSCredential]$SQLCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($SQLServicecreds.UserName)", $SQLServicecreds.Password)
+    [System.Management.Automation.PSCredential]$DomainCredsUPN = New-Object System.Management.Automation.PSCredential ("$($Admincreds.UserName)@${DomainName}", $Admincreds.Password)
+
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 
 
     [string]$OptimizationType = $WorkloadType
     $SQLInstance = "SQL001"
     $SqlCollation = "Latin1_General_CI_AS"
+    $ClusterNamedObjectOUPath = "OU=SQL2019,OU=SQLServers,DC=m365demo,DC=com,DC=au"
     $RebootVirtualMachine = $false
 
     #Get-DriveLetter -DriveLuns $SQLTempdbLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLTempdb"
@@ -93,30 +96,30 @@ configuration PrepSQL
     {
 
         xSqlCreateVirtualTempdbDisk TempdbDrive {
-            NumberOfDisks       = $SQLTempdbLun.Count
-            StartingDeviceID    = ($SQLTempdbLun[0].lun + 2)
-            DiskLetter          = $SQLTempdbDriveLetter
-            OptimizationType    = $OptimizationType
-            NumberOfColumns     = $NumberOfColumns
+            NumberOfDisks    = $SQLTempdbLun.Count
+            StartingDeviceID = ($SQLTempdbLun[0].lun + 2)
+            DiskLetter       = $SQLTempdbDriveLetter
+            OptimizationType = $OptimizationType
+            NumberOfColumns  = $NumberOfColumns
 
         }
 
         xSqlCreateVirtualDataDisk DataDrive {
-            NumberOfDisks       = $SQLDataLun.Count
-            StartingDeviceID    = ($SQLDataLun[0].lun + 2)
-            DiskLetter          = $SQLDataDriveLetter
-            OptimizationType    = $OptimizationType
-            NumberOfColumns     = $NumberOfColumns
-            DependsOn       = '[xSqlCreateVirtualTempdbDisk]TempdbDrive'
+            NumberOfDisks    = $SQLDataLun.Count
+            StartingDeviceID = ($SQLDataLun[0].lun + 2)
+            DiskLetter       = $SQLDataDriveLetter
+            OptimizationType = $OptimizationType
+            NumberOfColumns  = $NumberOfColumns
+            DependsOn        = '[xSqlCreateVirtualTempdbDisk]TempdbDrive'
         }
 
         xSqlCreateVirtualLogDisk LogDrive {
-            NumberOfDisks       = $SQLLogLun.Count
-            StartingDeviceID    = ($SQLLogLun[0].lun + 2)
-            DiskLetter          = $SQLLogDriveLetter
-            OptimizationType    = $OptimizationType
-            NumberOfColumns     = $NumberOfColumns
-            DependsOn       = '[xSqlCreateVirtualDataDisk]DataDrive'
+            NumberOfDisks    = $SQLLogLun.Count
+            StartingDeviceID = ($SQLLogLun[0].lun + 2)
+            DiskLetter       = $SQLLogDriveLetter
+            OptimizationType = $OptimizationType
+            NumberOfColumns  = $NumberOfColumns
+            DependsOn        = '[xSqlCreateVirtualDataDisk]DataDrive'
         }
 
 
@@ -156,35 +159,23 @@ configuration PrepSQL
             SetScript  = '[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; Install-PackageProvider -Name NuGet -Force; Install-Module -Name SqlServer -AllowClobber -Force; Import-Module -Name SqlServer -ErrorAction SilentlyContinue'
             TestScript = 'Import-Module -Name SqlServer -ErrorAction SilentlyContinue; if (Get-Module -Name SqlServer) { $True } else { $False }'
             GetScript  = 'Import-Module -Name SqlServer -ErrorAction SilentlyContinue; @{Ensure = if (Get-Module -Name SqlServer) {"Present"} else {"Absent"}}'
-            DependsOn = '[xSqlCreateVirtualLogDisk]LogDrive'
+            DependsOn  = '[xSqlCreateVirtualLogDisk]LogDrive'
         }
 
-        xFirewall DatabaseEngineFirewallRule
-        {
-            Direction    = "Inbound"
-            Name         = "SQL-Server-Database-Engine-TCP-In"
-            DisplayName  = "SQL Server Database Engine (TCP-In)"
-            Description  = "Inbound rule for SQL Server to allow TCP traffic for the Database Engine."
-            DisplayGroup = "SQL Server"
-            State        = "Enabled"
-            Access       = "Allow"
-            Protocol     = "TCP"
-            LocalPort = $DatabaseEnginePort -as [String]
-            Ensure       = "Present"
+        WindowsFeature 'NetFramework45' {
+            Name   = 'NET-Framework-45-Core'
+            Ensure = 'Present'
         }
 
-        xFirewall DatabaseMirroringFirewallRule
-        {
-            Direction    = "Inbound"
-            Name         = "SQL-Server-Database-Mirroring-TCP-In"
-            DisplayName  = "SQL Server Database Mirroring (TCP-In)"
-            Description  = "Inbound rule for SQL Server to allow TCP traffic for the Database Mirroring."
-            DisplayGroup = "SQL Server"
-            State        = "Enabled"
-            Access       = "Allow"
-            Protocol     = "TCP"
-            LocalPort = $DatabaseMirrorPort -as [String]
-            Ensure       = "Present"
+        SqlWindowsFirewall 'Create_Firewall_Rules_For_SQL' {
+            Ensure               = 'Present'
+            Features             = 'SQLENGINE'
+            InstanceName         = $SQLInstance
+            SourcePath           = $SQLInstallFiles
+
+            PsDscRunAsCredential = $DomainCredsUPN
+
+            DependsOn            = '[File]InstallationFolder'
         }
         
         SqlSetup 'InstallNamedInstance'
@@ -192,10 +183,10 @@ configuration PrepSQL
             InstanceName          = $SqlInstance
             Features              = 'SQLENGINE'
             SQLCollation          = $SqlCollation
-            SQLSvcAccount         = $SQLServiceCreds
+            SQLSvcAccount         = $SQLCreds
             AgtSvcAccount         = $SqlAgentServiceCredential
             ASSvcAccount          = $SqlServiceCredential
-            SQLSysAdminAccounts   = $SQLCreds.UserName, $AdminCreds.UserName
+            SQLSysAdminAccounts   = $SQLServiceCreds.UserName, $DomainCredsUPN.UserName
             #ASSysAdminAccounts    = 'COMPANY\SQL Administrators', $SqlAdministratorCredential.UserName
             InstallSharedDir      = 'C:\Program Files\Microsoft SQL Server'
             InstallSharedWOWDir   = 'C:\Program Files (x86)\Microsoft SQL Server'
@@ -212,78 +203,38 @@ configuration PrepSQL
             #ASBackupDir           = 'C:\MSOLAP13.INST2016\Backup'
             #ASTempDir             = 'C:\MSOLAP13.INST2016\Temp'
             SourcePath            = $SQLUNCPath
-            SourceCredential      = $DomainCreds
+            SourceCredential      = $DomainCredsUPN
             UpdateEnabled         = 'False'
             ForceReboot           = $false
             BrowserSvcStartupType = 'Automatic'
 
-            PsDscRunAsCredential  = $AdminCreds
+            PsDscRunAsCredential  = $DomainCredsUPN
 
-            DependsOn             = '[Script]SqlServerPowerShell'
+            DependsOn             = '[Script]SqlServerPowerShell', '[WindowsFeature]NetFramework45'
         }
 
-        xSqlLogin AddDomainAdminAccountToSysadminServerRole
+        SqlServiceAccount 'SetServiceAccount_User'
         {
-            Name                 = $DomainCreds.UserName
-            LoginType            = "WindowsUser"
-            ServerRoles          = "sysadmin"
-            Enabled              = $true
-            Credential           = $Admincreds
-            PsDscRunAsCredential = $Admincreds
-            DependsOn            = "[SqlSetup]InstallNamedInstance"
+            ServerName     = $env:COMPUTERNAME
+            InstanceName   = $SQLInstance
+            ServiceType    = 'DatabaseEngine'
+            ServiceAccount = $SQLServicecreds
+            RestartService = $true
+
+            DependsOn      = "[SqlSetup]InstallNamedInstance"
         }
 
-        xADUser CreateSqlServerServiceAccount
-        {
-            DomainAdministratorCredential = $DomainCreds
-            DomainName                    = $DomainName
-            UserName                      = $SQLServicecreds.UserName
-            Password                      = $SQLServicecreds
-            Ensure                        = "Present"
-            DependsOn                     = "[xSqlLogin]AddDomainAdminAccountToSysadminServerRole"
-        }
+       SqlAlwaysonService 'EnableAlwaysOn' {
+           Ensure = 'Present'
+           ServerName = $end:COMPUTERNAME
+           InstanceName = $SQLInstance
+           RestartTimeout = 120
 
-        xSqlLogin AddSqlServerServiceAccountToSysadminServerRole
-        {
-            Name                 = $SQLCreds.UserName
-            LoginType            = "WindowsUser"
-            ServerRoles          = "sysadmin"
-            Enabled              = $true
-            Credential           = $Admincreds
-            PsDscRunAsCredential = $Admincreds
-            DependsOn            = "[xADUser]CreateSqlServerServiceAccount"
-        }
+           PsDscRunAsCredential = $SQLCreds
+       }
+
         
-        xSqlTsqlEndpoint AddSqlServerEndpoint
-        {
-            InstanceName               = $SQLInstance
-            PortNumber                 = $DatabaseEnginePort
-            SqlAdministratorCredential = $Admincreds
-            PsDscRunAsCredential       = $Admincreds
-            DependsOn                  = "[xSqlLogin]AddSqlServerServiceAccountToSysadminServerRole"
-        }
-
-        xSQLServerStorageSettings AddSQLServerStorageSettings
-        {
-            InstanceName     = $SQLInstance
-            OptimizationType = $WorkloadType
-            DependsOn        = "[xSqlTsqlEndpoint]AddSqlServerEndpoint"
-        }
-
-        xSqlServer ConfigureSqlServerWithAlwaysOn
-        {
-            InstanceName                  = $env:COMPUTERNAME
-            SqlAdministratorCredential    = $Admincreds
-            ServiceCredential             = $SQLCreds
-            MaxDegreeOfParallelism        = 1
-            FilePath                      = "C:\DATA"
-            LogPath                       = "C:\LOG"
-            DomainAdministratorCredential = $DomainFQDNCreds
-            EnableTcpIp                   = $true
-            PsDscRunAsCredential          = $Admincreds
-            DependsOn                     = "[xSqlLogin]AddSqlServerServiceAccountToSysadminServerRole"
-        }
-
+       
         LocalConfigurationManager {
             RebootNodeIfNeeded = $true
         }
