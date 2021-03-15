@@ -94,7 +94,7 @@ configuration PrepSQL
 
         xSqlCreateVirtualTempdbDisk TempdbDrive {
             NumberOfDisks       = $SQLTempdbLun.Count
-            StartingDeviceID    = $SQLTempdbLun[0].lun
+            StartingDeviceID    = ($SQLTempdbLun[0].lun + 2)
             DiskLetter          = $SQLTempdbDriveLetter
             OptimizationType    = $OptimizationType
             NumberOfColumns     = $NumberOfColumns
@@ -103,7 +103,7 @@ configuration PrepSQL
 
         xSqlCreateVirtualDataDisk DataDrive {
             NumberOfDisks       = $SQLDataLun.Count
-            StartingDeviceID    = $SQLDataLun[0].lun
+            StartingDeviceID    = ($SQLDataLun[0].lun + 2)
             DiskLetter          = $SQLDataDriveLetter
             OptimizationType    = $OptimizationType
             NumberOfColumns     = $NumberOfColumns
@@ -112,7 +112,7 @@ configuration PrepSQL
 
         xSqlCreateVirtualLogDisk LogDrive {
             NumberOfDisks       = $SQLLogLun.Count
-            StartingDeviceID    = $SQLLogLun[0].lun
+            StartingDeviceID    = ($SQLLogLun[0].lun + 2)
             DiskLetter          = $SQLLogDriveLetter
             OptimizationType    = $OptimizationType
             NumberOfColumns     = $NumberOfColumns
@@ -200,12 +200,12 @@ configuration PrepSQL
             InstallSharedDir      = 'C:\Program Files\Microsoft SQL Server'
             InstallSharedWOWDir   = 'C:\Program Files (x86)\Microsoft SQL Server'
             InstanceDir           = 'C:\Program Files\Microsoft SQL Server'
-            InstallSQLDataDir     = $SQLDataPath.DriveLetter + ':\' + $SqlInstance + '_Data'
-            SQLUserDBDir          = $SQLDataPath.DriveLetter + ':\' + $SqlInstance + '_Data'
-            SQLUserDBLogDir       = $SQLLogPath.DriveLetter + ':\' + $SqlInstance + '_Logs'
-            SQLTempDBDir          = $SQLTempdbPath.DriveLetter + ':\' + $SqlInstance + '_Tempdb_Data'
-            SQLTempDBLogDir       = $SQLTempdbPath.DriveLetter + ':\' + $SqlInstance + '_Tempdb_Logs'
-            SQLBackupDir          = $SQLDataPath.DriveLetter + ':\' + $SqlInstance + '_Backup'
+            InstallSQLDataDir     = $SQLDataDriveLetter + ':\' + $SqlInstance + '_Data'
+            SQLUserDBDir          = $SQLDataDriveLetter + ':\' + $SqlInstance + '_Data'
+            SQLUserDBLogDir       = $SQLLogDriveLetter + ':\' + $SqlInstance + '_Logs'
+            SQLTempDBDir          = $SQLTempdbDriveLetter + ':\' + $SqlInstance + '_Tempdb_Data'
+            SQLTempDBLogDir       = $SQLTempdbDriveLetter + ':\' + $SqlInstance + '_Tempdb_Logs'
+            SQLBackupDir          = $SQLDataDriveLetter + ':\' + $SqlInstance + '_Backup'
             #ASConfigDir           = 'C:\MSOLAP13.INST2016\Config'
             #ASDataDir             = 'C:\MSOLAP13.INST2016\Data'
             #ASLogDir              = 'C:\MSOLAP13.INST2016\Log'
