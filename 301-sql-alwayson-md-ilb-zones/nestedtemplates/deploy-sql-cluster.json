@@ -334,7 +334,7 @@
                     "properties": {
                         "domainName": "[parameters('domainName')]",
                         "adminCreds": {
-                            "userName": "[parameters('adminUserName')]",
+                            "userName": "[first(split(parameters('adminUsername'), '@'))]",
                             "password": "PrivateSettingsRef:adminPassword"
                         },
                         "sqlServiceCreds": {
@@ -371,20 +371,7 @@
             "properties": {
                 "virtualMachineResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('vmNamePrefix'))]",
                 "sqlManagement": "Full",
-                "SqlServerLicenseType": "PAYG",
-                "StorageConfigurationSettings": {
-                    "SQLDataSettings": {
-                        "LUNs": "[parameters('SQLDataDiskCount')]",
-                        "DefaultFilePath": "G:\\\\SQLData"
-                    },
-                    "SQLLogSettings": {
-                        "Luns": "[parameters('SQLLogDiskCount')]",
-                        "DefaultFilePath": "H:\\\\SQLLogs"
-                    },
-                    "SQLTempDbSettings": {
-                        "DefaultFilePath": "F:\\\\SQLtempDb"
-                    }
-                }
+                "SqlServerLicenseType": "PAYG"
             }
         },
         {
