@@ -19,11 +19,6 @@ configuration ConfigSQLAO
         [String]$ClusterName,
 
         [Parameter(Mandatory)]
-        [String]$SQLUNCPath,
-
-        [String]$SQLInstallFiles = "C:\SQLInstall\",
-
-        [Parameter(Mandatory)]
         [String]$vmNamePrefix,
 
         [Parameter(Mandatory)]
@@ -58,41 +53,22 @@ configuration ConfigSQLAO
 
         [String]$DomainNetbiosName=(Get-NetBIOSName -DomainName $DomainName),
 
-        [Parameter()]
-        [string]$ClusterNetworkObject,
-
-        [Parameter()]
-        [array]$SQLDataLun,
-
-        [Parameter()]
-        [array]$SQLLogLun,
-
-        [Parameter()]
-        [array]$SQLTempdbLun,
-
-        [Parameter()]
-        [string]$OUPath,
-
-        [string]$SQLTempdbDriveLetter = "F",
-        [string]$SQLDataDriveLetter = "G",
-        [string]$SQLLogDriveLetter = "H",
+        [Parameter(Mandatory)]
+        [UInt32]$NumberOfDisks,
 
         [Parameter(Mandatory)]
         [String]$WorkloadType,
 
-        [Int]$NumberOfColumns = 2,
         [Int]$RetryCount=20,
         [Int]$RetryIntervalSec=30
 
     )
 
-    Import-DscResource -ModuleName xComputerManagement, CDisk, xActiveDirectory, xDisk, SqlServerDsc, xNetworking, xSql
+    Import-DscResource -ModuleName xComputerManagement, xFailOverCluster,CDisk,xActiveDirectory,xDisk,xNetworking,xSqlServerDsc
     [System.Management.Automation.PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($Admincreds.UserName)", $Admincreds.Password)
     [System.Management.Automation.PSCredential]$DomainFQDNCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
-    [System.Management.Automation.PSCredential]$SQLCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($SQLServicecreds.UserName)", $SQLServicecreds.Password)
-    [System.Management.Automation.PSCredential]$DomainCredsUPN = New-Object System.Management.Automation.PSCredential ("$($Admincreds.UserName)@${DomainName}", $Admincreds.Password)
-
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+    [System.Management.Automation.PSCredential]$SQLCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($SQLServiceCreds.UserName)", $SQLServiceCreds.Password)
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12    
 
     Enable-CredSSPNTLM -DomainName $DomainName
     
@@ -118,47 +94,11 @@ configuration ConfigSQLAO
 
     Node localhost
     {
-        xSqlCreateVirtualTempdbDisk TempdbDrive {
-            NumberOfDisks    = $SQLTempdbLun.Count
-            StartingDeviceID = ($SQLTempdbLun[0].lun + 2)
-            DiskLetter       = $SQLTempdbDriveLetter
-            OptimizationType = $OptimizationType
-            NumberOfColumns  = $NumberOfColumns
-
-        }
-
-        xSqlCreateVirtualDataDisk DataDrive {
-            NumberOfDisks    = $SQLDataLun.Count
-            StartingDeviceID = ($SQLDataLun[0].lun + 2)
-            DiskLetter       = $SQLDataDriveLetter
-            OptimizationType = $OptimizationType
-            NumberOfColumns  = $NumberOfColumns
-            DependsOn        = '[xSqlCreateVirtualTempdbDisk]TempdbDrive'
-        }
-
-        xSqlCreateVirtualLogDisk LogDrive {
-            NumberOfDisks    = $SQLLogLun.Count
-            StartingDeviceID = ($SQLLogLun[0].lun + 2)
-            DiskLetter       = $SQLLogDriveLetter
-            OptimizationType = $OptimizationType
-            NumberOfColumns  = $NumberOfColumns
-            DependsOn        = '[xSqlCreateVirtualDataDisk]DataDrive'
-        }
-
-        File InstallationFolder {
-            Ensure          = 'Present'
-            Type            = 'Directory'
-            SourcePath      = $SQLUNCPath
-            DestinationPath = $SQLInstallFiles
-            Recurse         = $true
-            DependsOn       = '[xSqlCreateVirtualLogDisk]LogDrive'
-        }
 
         WindowsFeature FC
         {
             Name = "Failover-Clustering"
             Ensure = "Present"
-            DependsOn = '[File]InstallationFolder'
         }
 
 		WindowsFeature FailoverClusterTools 
@@ -186,69 +126,116 @@ configuration ConfigSQLAO
             SetScript = '[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; Install-PackageProvider -Name NuGet -Force; Install-Module -Name SqlServer -AllowClobber -Force; Import-Module -Name SqlServer -ErrorAction SilentlyContinue'
             TestScript = 'Import-Module -Name SqlServer -ErrorAction SilentlyContinue; if (Get-Module -Name SqlServer) { $True } else { $False }'
             GetScript = 'Import-Module -Name SqlServer -ErrorAction SilentlyContinue; @{Ensure = if (Get-Module -Name SqlServer) {"Present"} else {"Absent"}}'
-            DependsOn  = '[xSqlCreateVirtualLogDisk]LogDrive'
         }
 
-        WindowsFeature 'NetFramework45' {
-            Name   = 'NET-Framework-45-Core'
-            Ensure = 'Present'
-        }
-
-        SqlWindowsFirewall 'Create_Firewall_Rules_For_SQL' {
-            Ensure               = 'Present'
-            Features             = 'SQLENGINE'
-            InstanceName         = $SQLInstance
-            SourcePath           = $SQLInstallFiles
-
-            PsDscRunAsCredential = $DomainCredsUPN
-
-            DependsOn            = '[File]InstallationFolder'
+        xWaitForADDomain DscForestWait 
+        { 
+            DomainName = $DomainName 
+            DomainUserCredential= $DomainCreds
+            RetryCount = $RetryCount 
+            RetryIntervalSec = $RetryIntervalSec 
+	        DependsOn = "[WindowsFeature]ADPS"
         }
         
-        SqlSetup 'InstallNamedInstance'
+        xComputer DomainJoin
         {
-            InstanceName          = $SqlInstance
-            Features              = 'SQLENGINE'
-            SQLCollation          = $SqlCollation
-            SQLSvcAccount         = $SQLCreds
-            AgtSvcAccount         = $SqlAgentServiceCredential
-            ASSvcAccount          = $SqlServiceCredential
-            SQLSysAdminAccounts   = $SQLServiceCreds.UserName, $DomainCredsUPN.UserName
-            #ASSysAdminAccounts    = 'COMPANY\SQL Administrators', $SqlAdministratorCredential.UserName
-            InstallSharedDir      = 'C:\Program Files\Microsoft SQL Server'
-            InstallSharedWOWDir   = 'C:\Program Files (x86)\Microsoft SQL Server'
-            InstanceDir           = 'C:\Program Files\Microsoft SQL Server'
-            InstallSQLDataDir     = $SQLDataDriveLetter + ':\' + $SqlInstance + '_Data'
-            SQLUserDBDir          = $SQLDataDriveLetter + ':\' + $SqlInstance + '_Data'
-            SQLUserDBLogDir       = $SQLLogDriveLetter + ':\' + $SqlInstance + '_Logs'
-            SQLTempDBDir          = $SQLTempdbDriveLetter + ':\' + $SqlInstance + '_Tempdb_Data'
-            SQLTempDBLogDir       = $SQLTempdbDriveLetter + ':\' + $SqlInstance + '_Tempdb_Logs'
-            SQLBackupDir          = $SQLDataDriveLetter + ':\' + $SqlInstance + '_Backup'
-            #ASConfigDir           = 'C:\MSOLAP13.INST2016\Config'
-            #ASDataDir             = 'C:\MSOLAP13.INST2016\Data'
-            #ASLogDir              = 'C:\MSOLAP13.INST2016\Log'
-            #ASBackupDir           = 'C:\MSOLAP13.INST2016\Backup'
-            #ASTempDir             = 'C:\MSOLAP13.INST2016\Temp'
-            SourcePath            = $SQLUNCPath
-            SourceCredential      = $DomainCredsUPN
-            UpdateEnabled         = 'False'
-            ForceReboot           = $false
-            BrowserSvcStartupType = 'Automatic'
-
-            PsDscRunAsCredential  = $DomainCredsUPN
-
-            DependsOn             = '[Script]SqlServerPowerShell', '[WindowsFeature]NetFramework45'
+            Name = $env:COMPUTERNAME
+            DomainName = $DomainName
+            Credential = $DomainCreds
+	        DependsOn = "[xWaitForADDomain]DscForestWait"
         }
 
-       
-       SqlAlwaysonService 'EnableAlwaysOn' {
-           Ensure = 'Present'
-           ServerName = $end:COMPUTERNAME
-           InstanceName = $SQLInstance
-           RestartTimeout = 120
+        xFirewall DatabaseEngineFirewallRule
+        {
+            Direction = "Inbound"
+            Name = "SQL-Server-Database-Engine-TCP-In"
+            DisplayName = "SQL Server Database Engine (TCP-In)"
+            Description = "Inbound rule for SQL Server to allow TCP traffic for the Database Engine."
+            DisplayGroup = "SQL Server"
+            State = "Enabled"
+            Access = "Allow"
+            Protocol = "TCP"
+            LocalPort = $DatabaseEnginePort -as [String]
+            Ensure = "Present"
+            DependsOn = "[xComputer]DomainJoin"
+        }
 
-           PsDscRunAsCredential = $SQLCreds
-       }
+        xFirewall DatabaseMirroringFirewallRule
+        {
+            Direction = "Inbound"
+            Name = "SQL-Server-Database-Mirroring-TCP-In"
+            DisplayName = "SQL Server Database Mirroring (TCP-In)"
+            Description = "Inbound rule for SQL Server to allow TCP traffic for the Database Mirroring."
+            DisplayGroup = "SQL Server"
+            State = "Enabled"
+            Access = "Allow"
+            Protocol = "TCP"
+            LocalPort = $DatabaseMirrorPort -as [String]
+            Ensure = "Present"
+            DependsOn = "[xComputer]DomainJoin"
+        }
+
+        xFirewall LoadBalancerProbePortFirewallRule
+        {
+            Direction = "Inbound"
+            Name = "SQL-Server-Probe-Port-TCP-In"
+            DisplayName = "SQL Server Probe Port (TCP-In)"
+            Description = "Inbound rule to allow TCP traffic for the Load Balancer Probe Port."
+            DisplayGroup = "SQL Server"
+            State = "Enabled"
+            Access = "Allow"
+            Protocol = "TCP"
+            LocalPort = $ProbePortNumber -as [String]
+            Ensure = "Present"
+            DependsOn = "[xComputer]DomainJoin"
+        }
+
+        xSqlLogin AddDomainAdminAccountToSysadminServerRole
+        {
+            Name = $DomainCreds.UserName
+            LoginType = "WindowsUser"
+            ServerRoles = "sysadmin"
+            Enabled = $true
+            Credential = $Admincreds
+            DependsOn = "[xComputer]DomainJoin"
+        }
+
+        xADUser CreateSqlServerServiceAccount
+        {
+            DomainAdministratorCredential = $DomainCreds
+            DomainName = $DomainName
+            UserName = $SQLServicecreds.UserName
+            Password = $SQLServicecreds
+            Ensure = "Present"
+            DependsOn = "[xSqlLogin]AddDomainAdminAccountToSysadminServerRole"
+        }
+
+        xSqlLogin AddSqlServerServiceAccountToSysadminServerRole
+        {
+            Name = $SQLCreds.UserName
+            LoginType = "WindowsUser"
+            ServerRoles = "sysadmin"
+            Enabled = $true
+            Credential = $Admincreds
+            PsDscRunAsCredential = $Admincreds
+            DependsOn = "[xADUser]CreateSqlServerServiceAccount"
+        }
+        
+        xSqlTsqlEndpoint AddSqlServerEndpoint
+        {
+            InstanceName = "MSSQLSERVER"
+            PortNumber = $DatabaseEnginePort
+            SqlAdministratorCredential = $Admincreds
+            PsDscRunAsCredential = $Admincreds
+            DependsOn = "[xSqlLogin]AddSqlServerServiceAccountToSysadminServerRole"
+        }
+
+        xSQLServerStorageSettings AddSQLServerStorageSettings
+        {
+            InstanceName = "MSSQLSERVER"
+            OptimizationType = $WorkloadType
+            DependsOn = "[xSqlTsqlEndpoint]AddSqlServerEndpoint"
+        }
 
         xCluster FailoverCluster
         {
@@ -257,7 +244,7 @@ configuration ConfigSQLAO
             PsDscRunAsCredential = $DomainCreds
             Nodes = $Nodes
             ClusterIPAddresses = $ClusterIpAddresses
-            DependsOn = "[WindowsFeature]FCPS"
+            DependsOn = @("[WindowsFeature]FCPS","[xComputer]DomainJoin")
         }
 
         Script CloudWitness
@@ -268,7 +255,32 @@ configuration ConfigSQLAO
             DependsOn = "[xCluster]FailoverCluster"
         }
 
-        
+        xSqlServer ConfigureSqlServerWithAlwaysOn
+        {
+            InstanceName = $env:COMPUTERNAME
+            SqlAdministratorCredential = $Admincreds
+            ServiceCredential = $SQLCreds
+            Hadr = "Enabled"
+            MaxDegreeOfParallelism = 1
+            FilePath = "F:\DATA"
+            LogPath = "F:\LOG"
+            DomainAdministratorCredential = $DomainFQDNCreds
+            EnableTcpIp = $true
+            PsDscRunAsCredential = $Admincreds
+            DependsOn = "[xCluster]FailoverCluster"
+        }
+
+        xSqlEndpoint SqlAlwaysOnEndpoint
+        {
+            InstanceName = $env:COMPUTERNAME
+            Name = $SqlAlwaysOnEndpointName
+            PortNumber = $DatabaseMirrorPort
+            AllowedUser = $SQLServiceCreds.UserName
+            SqlAdministratorCredential = $SQLCreds
+            PsDscRunAsCredential = $DomainCreds
+            DependsOn = "[xSqlServer]ConfigureSqlServerWithAlwaysOn"
+        }
+
         foreach ($Node in $Nodes) {
             
             If ($Node -ne $PrimaryReplica) {

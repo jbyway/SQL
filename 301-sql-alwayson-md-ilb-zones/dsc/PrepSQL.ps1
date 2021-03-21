@@ -20,9 +20,6 @@ configuration PrepSQL
 
         [UInt32]$DiskAllocationSize = 65536,
 
-        [Parameter()]
-        [UInt32]$NumberOfDisks,
-
         [Parameter(Mandatory)]
         [String]$SQLUNCPath,
 
@@ -34,7 +31,7 @@ configuration PrepSQL
         [Parameter()]
         [String]$SqlCollation,
 
-        [Parameter(Mandatory)]
+        [Parameter()]
         [String]$WorkloadType,
 
         [Parameter()]
@@ -45,6 +42,12 @@ configuration PrepSQL
 
         [Parameter()]
         [array]$SQLTempdbLun,
+
+        [Parameter()]
+        [string]$OUPath,
+
+        [Parameter()]
+        [string]$ClusterNetworkObject,
 
         [String]$DomainNetbiosName = (Get-NetBIOSName -DomainName $DomainName),
 
@@ -71,7 +74,7 @@ configuration PrepSQL
     [string]$OptimizationType = $WorkloadType
     $SQLInstance = "SQL001"
     $SqlCollation = "Latin1_General_CI_AS"
-    $ClusterNamedObjectOUPath = "OU=SQL2019,OU=SQLServers,DC=m365demo,DC=com,DC=au"
+
     $RebootVirtualMachine = $false
 
     #Get-DriveLetter -DriveLuns $SQLTempdbLun.lun -DiskAllocationSize $DiskAllocationSize -DiskNamePrefix "SQLTempdb"
@@ -121,7 +124,6 @@ configuration PrepSQL
             NumberOfColumns  = $NumberOfColumns
             DependsOn        = '[xSqlCreateVirtualDataDisk]DataDrive'
         }
-
 
         File InstallationFolder {
             Ensure          = 'Present'
@@ -213,17 +215,7 @@ configuration PrepSQL
             DependsOn             = '[Script]SqlServerPowerShell', '[WindowsFeature]NetFramework45'
         }
 
-        SqlServiceAccount 'SetServiceAccount_User'
-        {
-            ServerName     = $env:COMPUTERNAME
-            InstanceName   = $SQLInstance
-            ServiceType    = 'DatabaseEngine'
-            ServiceAccount = $SQLServicecreds
-            RestartService = $true
-
-            DependsOn      = "[SqlSetup]InstallNamedInstance"
-        }
-
+       
        SqlAlwaysonService 'EnableAlwaysOn' {
            Ensure = 'Present'
            ServerName = $end:COMPUTERNAME

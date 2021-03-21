@@ -115,7 +115,7 @@
         "witnessStorageName": "[concat(parameters('namePrefix'),uniqueString(resourceGroup().id),'cw')]",
         "witnessStorageType": "Standard_LRS",
         "vmNamePrefix": "[concat(parameters('namePrefix'),'-sql-')]",
-        "clusterName": "[concat(variables('vmNamePrefix'),'c')]",
+        "clusterName": "[concat(variables('vmNamePrefix'),'-c')]",
         "vmLoopTemplateURL": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/newVM.json',parameters('_artifactsLocationSasToken')))]",
         "ipLoopTemplateURL": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/getIpAddress.json',parameters('_artifactsLocationSasToken')))]",
         "sqlPrepModulesURL": "[uri(parameters('_artifactsLocation'), concat('dsc/prep-sqlao.ps1.zip',parameters('_artifactsLocationSasToken')))]",
@@ -333,6 +333,8 @@
                     "configurationFunction": "[variables('sqlPrepFunction')]",
                     "properties": {
                         "domainName": "[parameters('domainName')]",
+                        "OUPath": "[parameters('ouPath')]",
+                        "ClusterNetworkObject": "[variables('clusterName')]",
                         "adminCreds": {
                             "userName": "[first(split(parameters('adminUsername'), '@'))]",
                             "password": "PrivateSettingsRef:adminPassword"
@@ -395,6 +397,7 @@
                     "configurationFunction": "[variables('sqlConfigFunction')]",
                     "properties": {
                         "domainName": "[parameters('domainName')]",
+                        "OUPath": "[parameters('ouPath')]",
                         "clusterName": "[variables('clusterName')]",
                         "vmNamePrefix": "[variables('vmNamePrefix')]",
                         "sqlAlwaysOnAvailabilityGroupName": "[variables('agName')]",
@@ -412,13 +415,16 @@
                             "password": "PrivateSettingsRef:witnessStorageKey"
                         },
                         "adminCreds": {
-                            "userName": "[parameters('adminUserName')]",
+                            "userName": "[first(split(parameters('adminUsername'), '@'))]",
                             "password": "PrivateSettingsRef:adminPassword"
                         },
                         "sqlServiceCreds": {
                             "userName": "[parameters('sqlServiceAccount')]",
                             "password": "PrivateSettingsRef:sqlServicePassword"
-                        }
+                        },
+                        "SQLDataLun": "[variables('SQLDataDiskLun')]",
+                        "SQLLogLun": "[variables('SQLLogDiskLun')]",
+                        "SQLTempdbLun": "[variables('SQLTempDBDiskLun')]"
                     }
                 },
                 "protectedSettings": {
