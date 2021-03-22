@@ -121,7 +121,7 @@
         "sqlPrepModulesURL": "[uri(parameters('_artifactsLocation'), concat('dsc/prep-sqlao.ps1.zip',parameters('_artifactsLocationSasToken')))]",
         "sqlPrepFunction": "PrepSQL.ps1\\PrepSQL",
         "sqlConfigModulesURL": "[uri(parameters('_artifactsLocation'), concat('dsc/config-sqlao.ps1.zip',parameters('_artifactsLocationSasToken')))]",
-        "sqlConfigFunction": "ConfigSQL.ps1\\ConfigSQL",
+        "sqlConfigFunction": "ConfigSQLAO.ps1\\ConfigSQLAO",
         "agName": "[concat(variables('vmNamePrefix'),'ag')]",
         "agListenerName": "[concat(variables('vmNamePrefix'),'agl')]",
         "agEpName": "[concat(variables('vmNamePrefix'),'ha')]",
@@ -358,22 +358,6 @@
                         "sqlServicePassword": "[parameters('sqlServicePassword')]"
                     }
                 }
-            }
-        },
-        {
-            "type": "Microsoft.SqlVirtualMachine/SqlVirtualMachines",
-            "apiVersion": "2017-03-01-preview",
-            "name": "[variables('vmNamePrefix')]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "virtualMachineLoop",
-                "virtualMachineExtensionLoop",
-                "clusterIpLoop"
-            ],
-            "properties": {
-                "virtualMachineResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('vmNamePrefix'))]",
-                "sqlManagement": "Full",
-                "SqlServerLicenseType": "PAYG"
             }
         },
         {
