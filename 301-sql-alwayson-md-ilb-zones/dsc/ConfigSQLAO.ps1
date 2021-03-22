@@ -36,7 +36,7 @@ configuration ConfigSQLAO
         [String]$SqlAlwaysOnAvailabilityGroupListenerName,
 
         [Parameter(Mandatory)]
-        [String]$ClusterIpAddresses,
+        [array]$ClusterIpAddresses,
 
         [Parameter(Mandatory)]
         [String]$AGListenerIpAddress,
