@@ -205,15 +205,27 @@ configuration PrepSQL
             DependsOn             = '[Script]SqlServerPowerShell', '[WindowsFeature]NetFramework45'
         }
 
-       
-       SqlAlwaysonService 'EnableAlwaysOn' {
-           Ensure = 'Present'
-           ServerName = $end:COMPUTERNAME
-           InstanceName = $SQLInstance
-           RestartTimeout = 120
+        SqlWindowsFirewall 'Create_Firewall_Rules' {
+            Ensure               = 'Present'
+            Features             = 'SQLENGINE'
+            InstanceName         = $SqlInstance
 
-           PsDscRunAsCredential = $SQLCreds
-       }
+            SourcePath           = $SQLInstallFiles
+
+            PsDscRunAsCredential = $DomainCredsUPN
+            DependsOn = '[SqlSetup]InstallNamedInstance'
+        }
+       
+        SqlAlwaysonService 'EnableAlwaysOn' {
+            Ensure               = 'Present'
+            ServerName           = $env:COMPUTERNAME
+            InstanceName         = $SQLInstance
+            RestartTimeout       = 120
+
+            PsDscRunAsCredential = $SQLCreds
+
+            DependsOn            = '[SqlSetup]InstallNamedInstance'
+        }
 
         
        

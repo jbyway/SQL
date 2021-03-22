@@ -115,7 +115,7 @@
         "witnessStorageName": "[concat(parameters('namePrefix'),uniqueString(resourceGroup().id),'cw')]",
         "witnessStorageType": "Standard_LRS",
         "vmNamePrefix": "[concat(parameters('namePrefix'),'-sql-')]",
-        "clusterName": "[concat(variables('vmNamePrefix'),'-c')]",
+        "clusterName": "[concat(variables('vmNamePrefix'),'c')]",
         "vmLoopTemplateURL": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/newVM.json',parameters('_artifactsLocationSasToken')))]",
         "ipLoopTemplateURL": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/getIpAddress.json',parameters('_artifactsLocationSasToken')))]",
         "sqlPrepModulesURL": "[uri(parameters('_artifactsLocation'), concat('dsc/prep-sqlao.ps1.zip',parameters('_artifactsLocationSasToken')))]",
