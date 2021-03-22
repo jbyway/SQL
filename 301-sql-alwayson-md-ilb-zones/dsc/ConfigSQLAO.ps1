@@ -306,7 +306,7 @@ configuration ConfigSQLAO
 
             PsDscRunAsCredential = $SqlAdministratorCredential
 
-            DependsOn = '[Sql]AddAG'
+            DependsOn = '[SqlAG]AddAG'
         }
 
 
