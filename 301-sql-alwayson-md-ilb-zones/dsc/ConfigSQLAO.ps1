@@ -194,17 +194,8 @@ configuration ConfigSQLAO
             Ensure = 'Present'
         }
 
-        SqlWindowsFirewall 'Create_Firewall_Rules_For_SQL' {
-            Ensure               = 'Present'
-            Features             = 'SQLENGINE'
-            InstanceName         = $SQLInstance
-            SourcePath           = $SQLInstallFiles
-
-            PsDscRunAsCredential = $DomainCredsUPN
-
-            DependsOn            = '[File]InstallationFolder'
-        }
         
+
         SqlSetup 'InstallNamedInstance'
         {
             InstanceName          = $SqlInstance
