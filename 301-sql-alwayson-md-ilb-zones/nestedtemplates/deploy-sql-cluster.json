@@ -382,6 +382,7 @@
                     "properties": {
                         "domainName": "[parameters('domainName')]",
                         "OUPath": "[parameters('ouPath')]",
+                        "SQLUNCPath": "[parameters('SQLUNCPath')]",
                         "clusterName": "[variables('clusterName')]",
                         "vmNamePrefix": "[variables('vmNamePrefix')]",
                         "sqlAlwaysOnAvailabilityGroupName": "[variables('agName')]",
