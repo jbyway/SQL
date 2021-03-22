@@ -96,6 +96,10 @@ configuration ConfigSQLAO
 
     Enable-CredSSPNTLM -DomainName $DomainName
     
+    [string]$OptimizationType = $WorkloadType
+    $SQLInstance = "SQL001"
+    $SqlCollation = "Latin1_General_CI_AS"
+
     $RebootVirtualMachine = $false
 
     if ($DomainName)
