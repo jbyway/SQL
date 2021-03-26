@@ -48,19 +48,24 @@
             "type": "int"
         },
         "autoShutdownStatus": {
-            "value": "Enabled"
+            "type": "string",
+            "defaultValue": "Enabled"
         },
         "autoShutdownTime": {
-            "value": "22:00"
+            "type": "string",
+            "defaultValue": "22:00"
         },
         "autoShutdownTimeZone": {
-            "value": "AUS Eastern Standard Time"
+            "type": "string",
+            "defaultValue": "AUS Eastern Standard Time"
         },
         "autoShutdownNotificationStatus": {
-            "value": "Disabled"
+            "type": "string",
+            "defaultValue": "Disabled"
         },
         "autoShutdownNotificationLocale": {
-            "value": "en"
+            "type": "string",
+            "defaultValue": "en"
         }
     },
     "variables": {
