@@ -46,6 +46,21 @@
         },
         "SQLTempDBDiskSize": {
             "type": "int"
+        },
+        "autoShutdownStatus": {
+            "value": "Enabled"
+        },
+        "autoShutdownTime": {
+            "value": "22:00"
+        },
+        "autoShutdownTimeZone": {
+            "value": "AUS Eastern Standard Time"
+        },
+        "autoShutdownNotificationStatus": {
+            "value": "Disabled"
+        },
+        "autoShutdownNotificationLocale": {
+            "value": "en"
         }
     },
     "variables": {
@@ -220,6 +235,29 @@
                     }
                 },
                 "licenseType": "Windows_Server"
+            }
+        },
+        {
+            "name": "[concat('shutdown-computevm-', parameters('vmName'))]",
+            "type": "Microsoft.DevTestLab/schedules",
+            "apiVersion": "2017-04-26-preview",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
+            ],
+            "properties": {
+                "status": "[parameters('autoShutdownStatus')]",
+                "taskType": "ComputeVmShutdownTask",
+                "dailyRecurrence": {
+                    "time": "[parameters('autoShutdownTime')]"
+                },
+                "timeZoneId": "[parameters('autoShutdownTimeZone')]",
+                "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]",
+                "notificationSettings": {
+                    "status": "[parameters('autoShutdownNotificationStatus')]",
+                    "notificationLocale": "[parameters('autoShutdownNotificationLocale')]",
+                    "timeInMinutes": "30"
+                }
             }
         },
         {

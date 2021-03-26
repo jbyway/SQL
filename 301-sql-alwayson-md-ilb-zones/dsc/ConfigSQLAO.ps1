@@ -220,7 +220,8 @@ configuration ConfigSQLAO
             #ASTempDir             = 'C:\MSOLAP13.INST2016\Temp'
             SourcePath            = $SQLUNCPath
             SourceCredential      = $DomainCredsUPN
-            UpdateEnabled         = 'False'
+            UpdateEnabled         = 'True'
+            UpdateSource          = $SQLInstallFiles + '\Updates'
             ForceReboot           = $false
             BrowserSvcStartupType = 'Automatic'
 
@@ -294,25 +295,7 @@ configuration ConfigSQLAO
       
        
            
-        SqlAGListener 'AvailabilityGroupListenerWithDifferentNameAsVCO'
-        {
-            Ensure               = 'Present'
-            ServerName           = $env:COMPUTERNAME
-            InstanceName         = $SQLInstance
-            AvailabilityGroup    = $SqlAlwaysOnAvailabilityGroupName
-            Name                 = $SqlAlwaysOnAvailabilityGroupListenerName
-            DHCP                 = $true
-            Port                 = 5301
-
-            PsDscRunAsCredential = $SqlAdministratorCredential
-
-            DependsOn = '[SqlAG]AddAG'
-        }
-
-
-
-
-        LocalConfigurationManager {
+               LocalConfigurationManager {
             RebootNodeIfNeeded = $true
         }
 

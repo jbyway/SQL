@@ -196,7 +196,8 @@ configuration PrepSQL
             #ASTempDir             = 'C:\MSOLAP13.INST2016\Temp'
             SourcePath            = $SQLUNCPath
             SourceCredential      = $DomainCredsUPN
-            UpdateEnabled         = 'False'
+            UpdateEnabled         = 'True'
+            UpdateSource          = $SQLInstallFiles + '\Updates'
             ForceReboot           = $false
             BrowserSvcStartupType = 'Automatic'
 
